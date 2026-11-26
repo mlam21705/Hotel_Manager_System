@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{housekeeper/housekeeper-header :: head('Bảng điều khiển Buồng phòng — Khách sạn Harbor Lights')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        
+        .stat-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+        }
+        .stat-card h3 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: #222;
+        }
+        .stat-card p {
+            margin: 5px 0 0 0;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        .stat-border-success { border-left: 5px solid #28a745; }
+        .stat-border-danger { border-left: 5px solid #dc3545; }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{housekeeper/housekeeper-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_4.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/housekeeper/home">Trang chủ</a></span> <span>Buồng phòng</span></p>
+                        <h1 class="mb-4 bread" th:text="${'Xin chào, ' + currentUser.username}">Nhân viên buồng phòng</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            
+            <!-- ALERTS -->
+            <div class="row mb-4" th:if="${successMessage != null or errorMessage != null}">
+                <div class="col-12">
+                    <div th:if="${successMessage != null}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${successMessage}">Success message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div th:if="${errorMessage != null}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${errorMessage}">Error message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATS CARDS -->
+            <div class="row">
+                <div class="col-md-6 col-sm-12">
+                    <div class="stat-card stat-border-success">
+                        <h3>Dọn dẹp</h3>
+                        <p class="text-success">Lịch làm việc & Danh sách phòng</p>
+                        <a href="/housekeeper/tasks" class="btn btn-sm btn-custom mt-3">Truy cập</a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-sm-12">
+                    <div class="stat-card stat-border-danger">
+                        <h3>Sự cố</h3>
+                        <p class="text-danger">Ghi nhận hỏng hóc thiết bị</p>
+                        <a href="/housekeeper/problems" class="btn btn-sm btn-custom mt-3">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTRODUCTION -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h4 class="font-weight-bold text-dark mb-3">Tổng quan Buồng phòng (Housekeeper)</h4>
+                        <p class="text-muted">
+                            Tại đây, bạn có thể xem lịch trực dọn dẹp hàng ngày được giao phó, cập nhật tiến độ công việc và báo cáo tình trạng các trang thiết bị bị hỏng hóc trong phòng để yêu cầu bộ phận kỹ thuật hỗ trợ.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{housekeeper/housekeeper-header :: scripts}"></div>
+</body>
+</html>

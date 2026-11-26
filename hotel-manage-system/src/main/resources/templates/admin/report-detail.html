@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/admin-header :: head('Report Detail')"></head>
+<body>
+
+    <nav th:replace="admin/admin-header :: navbar"></nav>
+
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg'); height: 300px;">
+        <div class="overlay" style="height: 300px;"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text align-items-center justify-content-center" style="height: 300px;">
+                <div class="col-md-9 text-center">
+                    <h1 class="mb-0 bread" style="font-size: 40px;">Report Detail</h1>
+                    <p class="breadcrumbs">
+                        <span class="mr-2"><a href="/admin/home">Admin <i class="fa fa-chevron-right"></i></a></span>
+                        <span class="mr-2"><a href="/admin/reports">Reports <i class="fa fa-chevron-right"></i></a></span>
+                        <span>Detail</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="ftco-section bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="bg-white p-5 rounded shadow-sm">
+                        <h3 class="mb-4">Report Information</h3>
+                        
+                        <div class="mb-3">
+                            <strong>Report ID:</strong> <span th:text="${report.reportId}"></span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Room:</strong> <span th:text="${report.room.id.branchId + ' - ' + report.room.id.roomNo}"></span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Reported By:</strong> <span th:text="${report.reportedBy.username}"></span> 
+                            (<span th:text="${report.reportedBy.role.roleName}"></span>)
+                        </div>
+                        <div class="mb-3">
+                            <strong>Date:</strong> <span th:text="${#temporals.format(report.reportDate, 'dd/MM/yyyy HH:mm')}"></span>
+                        </div>
+                        <div class="mb-4">
+                            <strong>Description:</strong>
+                            <p class="border p-3 bg-light rounded mt-2" th:text="${report.issueDescription}"></p>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h4 class="mb-3">Update Status</h4>
+                        <form th:action="@{/admin/reports/update-status}" method="post">
+                            <input type="hidden" name="id" th:value="${report.reportId}">
+                            
+                            <div class="form-group row align-items-center">
+                                <label for="status" class="col-sm-3 col-form-label font-weight-bold">Current Status:</label>
+                                <div class="col-sm-6">
+                                    <select name="status" id="status" class="form-control" required>
+                                        <option th:each="stat : ${statuses}" 
+                                                th:value="${stat.name()}" 
+                                                th:text="${stat.name()}"
+                                                th:selected="${stat == report.resolveStatus}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-3">
+                                    <button type="submit" class="btn btn-primary w-100">Update</button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div class="mt-4">
+                            <a href="/admin/reports" class="btn btn-secondary">Back to List</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div th:replace="admin/admin-header :: scripts"></div>
+</body>
+</html>

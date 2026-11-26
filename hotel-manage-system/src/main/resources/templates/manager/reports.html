@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{manager/manager-header :: head('Reports Dashboard - Manager — Harbor Lights Hotel')}"></th:block>
+
+    <style>
+        .btn-custom {
+            background-color: #f96d00 !important;
+            border-color: #f96d00 !important;
+            color: #fff !important;
+            border-radius: 0 !important;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            background-color: #e06200 !important;
+            border-color: #e06200 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(249, 109, 0, 0.3);
+        }
+        .report-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            padding: 25px;
+            border-radius: 0;
+            height: 100%;
+        }
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #222;
+            line-height: 1;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .progress-bar-custom {
+            height: 8px;
+            background-color: #f96d00;
+            border-radius: 0;
+            transition: width 0.6s ease;
+        }
+        .filter-section {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border-radius: 0;
+        }
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{manager/manager-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/index.html">Home</a></span> <span>Manager</span></p>
+                        <h1 class="mb-4 bread">Analytical Reports</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            
+            <!-- BRANCH & DATE SELECTOR FOR REPORTS -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="filter-section">
+                        <form method="get" th:action="@{/manager/reports}" id="report-filter-form">
+                            <div class="form-row align-items-end">
+                                <div class="form-group col-md-4 mb-3 mb-md-0">
+                                    <label for="report-branchId" class="font-weight-bold">Select Hotel Branch</label>
+                                    <select class="form-control" name="branchId" id="report-branchId">
+                                        <option value="0" th:selected="${selectedBranch == 0}">All branch</option>
+                                        <option value="1" th:selected="${selectedBranch == 1}">Branch 1 (North Side)</option>
+                                        <option value="2" th:selected="${selectedBranch == 2}">Branch 2 (South Side)</option>
+                                        <option value="3" th:selected="${selectedBranch == 3}">Branch 3 (Coastal Resort)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3 mb-3 mb-md-0">
+                                    <label for="rev-year" class="font-weight-bold text-dark">Year</label>
+                                    <select class="form-control" name="year" id="rev-year">
+                                        <option value="2026" th:selected="${selectedYear == 2026}">2026</option>
+                                        <option value="2025" th:selected="${selectedYear == 2025}">2025</option>
+                                        <option value="2024" th:selected="${selectedYear == 2024}">2024</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3 mb-3 mb-md-0">
+                                    <label for="rev-month" class="font-weight-bold text-dark">Month</label>
+                                    <select class="form-control" name="month" id="rev-month">
+                                        <option value="1" th:selected="${selectedMonth == 1}">January</option>
+                                        <option value="2" th:selected="${selectedMonth == 2}">February</option>
+                                        <option value="3" th:selected="${selectedMonth == 3}">March</option>
+                                        <option value="4" th:selected="${selectedMonth == 4}">April</option>
+                                        <option value="5" th:selected="${selectedMonth == 5}">May</option>
+                                        <option value="6" th:selected="${selectedMonth == 6}">June</option>
+                                        <option value="7" th:selected="${selectedMonth == 7}">July</option>
+                                        <option value="8" th:selected="${selectedMonth == 8}">August</option>
+                                        <option value="9" th:selected="${selectedMonth == 9}">September</option>
+                                        <option value="10" th:selected="${selectedMonth == 10}">October</option>
+                                        <option value="11" th:selected="${selectedMonth == 11}">November</option>
+                                        <option value="12" th:selected="${selectedMonth == 12}">December</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 mb-0">
+                                    <button type="submit" class="btn btn-custom px-4 py-2" id="btn-fetch-reports" style="width:100%;">
+                                        Filter
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OCCUPANCY STATS CARDS -->
+            <h3 class="mb-4 font-weight-bold text-dark">Real-Time Occupancy Summary</h3>
+            <div class="row mb-5">
+                <div class="col-md-3 mb-4">
+                    <div class="report-card text-center">
+                        <span class="metric-label">Total Rooms</span>
+                        <div class="metric-value mt-2 text-dark" id="totalRooms" th:text="${occupancyReport['totalRooms']}">-</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="report-card text-center">
+                        <span class="metric-label text-success">Available Rooms</span>
+                        <div class="metric-value mt-2 text-success" id="availableRooms" th:text="${occupancyReport['availableRooms']}">-</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="report-card text-center">
+                        <span class="metric-label text-primary">Occupied Rooms</span>
+                        <div class="metric-value mt-2 text-primary" id="occupiedRooms" th:text="${occupancyReport['occupiedRooms']}">-</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="report-card text-center">
+                        <span class="metric-label text-warning">Cleaning Rooms</span>
+                        <div class="metric-value mt-2 text-warning" id="cleaningRooms" th:text="${occupancyReport['cleaningRooms']}">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-md-6 mb-4">
+                    <div class="report-card">
+                        <h4 class="font-weight-bold text-dark mb-4">Occupancy Rate</h4>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Current occupancy level</span>
+                            <span class="font-weight-bold text-dark" id="occupancyRateText" th:text="${#numbers.formatDecimal(occupancyReport['occupancyRate'], 1, 1)} + '%'">-%</span>
+                        </div>
+                        <div class="progress" style="height:10px; border-radius:0; background-color:#e9ecef;">
+                            <div class="progress-bar progress-bar-custom" id="occupancyProgressBar" role="progressbar" 
+                                 th:style="'width: ' + ${occupancyReport['occupancyRate']} + '%'" 
+                                 th:aria-valuenow="${occupancyReport['occupancyRate']}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <p class="text-muted small mt-3">Calculated as occupied rooms divided by total rooms.</p>
+                    </div>
+                </div>
+                
+                <!-- REVENUE CARD -->
+                <div class="col-md-6 mb-4">
+                    <div class="report-card d-flex flex-column justify-content-between">
+                        <div>
+                            <h4 class="font-weight-bold text-dark mb-4">Financial Summary</h4>
+                            <p class="text-muted">Total processed revenue generated from finalized bookings (room rates + orders + additional service charges) for the queried period.</p>
+                        </div>
+                        <div class="border-top pt-3 text-center">
+                            <span class="metric-label text-success">Total Month Revenue</span>
+                            <div class="metric-value mt-2 text-success" id="monthlyRevenueValue" 
+                                 th:text="${#numbers.formatDecimal(revenueReport['totalRevenue'], 1, 'POINT', 0, 'COMMA')} + ' VND'">0 VND</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="ftco-footer ftco-section img" style="background-image: url('/images/bg_4.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Harbor Lights</h2>
+                        <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+                        <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+                            <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4 ml-md-5">
+                        <h2 class="ftco-heading-2">Useful Links</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Blog</a></li>
+                            <li><a href="#" class="py-2 d-block">Rooms</a></li>
+                            <li><a href="#" class="py-2 d-block">Amenities</a></li>
+                            <li><a href="#" class="py-2 d-block">Gift Card</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Privacy</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Career</a></li>
+                            <li><a href="#" class="py-2 d-block">About Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Contact Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Services</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Have a Questions?</h2>
+                        <div class="block-23 mb-3">
+                            <ul>
+                                <li><span class="icon icon-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+                                <li><a href="#"><span class="icon icon-phone"></span><span class="text">+2 392 3929 210</span></a></li>
+                                <li><a href="#"><span class="icon icon-envelope"></span><span class="text">info@yourdomain.com</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>
+                        Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart color-danger" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{manager/manager-header :: scripts}"></div>
+
+</body>
+</html>

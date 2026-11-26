@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:insert="~{manager/manager-header :: head('Rooms Management - Manager — Harbor Lights Hotel')}">
+    </th:block>
+
+    <script>
+        window.onerror = function (message, source, lineno, colno, error) {
+            var errDiv = document.createElement('div');
+            errDiv.style.position = 'fixed';
+            errDiv.style.top = '10px';
+            errDiv.style.left = '10px';
+            errDiv.style.right = '10px';
+            errDiv.style.backgroundColor = '#f8d7da';
+            errDiv.style.color = '#721c24';
+            errDiv.style.border = '2px solid #dc3545';
+            errDiv.style.padding = '15px';
+            errDiv.style.zIndex = '999999';
+            errDiv.style.fontFamily = 'monospace';
+            errDiv.style.fontSize = '14px';
+            errDiv.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+            errDiv.innerHTML = '<strong>JS Error:</strong> ' + message + '<br><strong>Source:</strong> ' + source + ':' + lineno + ':' + colno;
+            document.body.appendChild(errDiv);
+            return false;
+        };
+    </script>
+    <style>
+        .btn-custom {
+            background: #f96d00;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom:hover {
+            background: #e06200;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(249, 109, 0, 0.3);
+        }
+
+        .btn-custom-danger {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-danger:hover {
+            background: #c82333;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn-custom-dark {
+            background: #1e1e24;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-dark:hover {
+            background: #0b0b0d;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .table {
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .table thead th {
+            border-bottom: 2px solid #f96d00;
+            color: #222;
+            font-weight: 700;
+        }
+
+        .badge-status-empty {
+            background-color: #28a745 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+
+        .badge-status-cleaning {
+            background-color: #fca311 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+
+        .badge-status-occupied {
+            background-color: #007bff !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+
+        .modal-content {
+            border-radius: 0;
+            border: none;
+        }
+
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+
+        .filter-card {
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 0;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{manager/manager-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/index.html">Home</a></span>
+                            <span>Manager</span>
+                        </p>
+                        <h1 class="mb-4 bread">Rooms Management</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            <div class="row justify-content-between align-items-center mb-4">
+                <div class="col-md-8">
+                    <h2>Manage Rooms</h2>
+                    <p class="text-muted">Configure hotel rooms, assign categories, and update room service status.</p>
+                </div>
+                <div class="col-md-4 text-md-right">
+                    <button class="btn btn-custom px-4 py-3" id="btn-add-room">
+                        + Add Room
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTER CARD -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="filter-card">
+                        <div class="form-row align-items-end">
+                            <div class="form-group col-md-3 mb-0">
+                                <label for="search-rooms" class="font-weight-bold">Search Room</label>
+                                <input type="text" class="form-control" id="search-rooms" th:value="${searchKeyword}"
+                                    placeholder="Search by number, floor, category...">
+                            </div>
+                            <div class="form-group col-md-3 mb-0">
+                                <label for="filter-branch" class="font-weight-bold">Filter by Branch</label>
+                                <select class="form-control" id="filter-branch">
+                                    <option value="ALL" th:selected="${selectedBranch == 'ALL'}">All Branches</option>
+                                    <option value="1" th:selected="${selectedBranch == '1'}">Branch 1 (North)</option>
+                                    <option value="2" th:selected="${selectedBranch == '2'}">Branch 2 (South)</option>
+                                    <option value="3" th:selected="${selectedBranch == '3'}">Branch 3 (Coastal)</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3 mb-0">
+                                <label for="filter-status" class="font-weight-bold">Filter by Status</label>
+                                <select class="form-control" id="filter-status">
+                                    <option value="ALL" th:selected="${selectedStatus == 'ALL'}">All Statuses</option>
+                                    <option value="Trống" th:selected="${selectedStatus == 'Trống'}">Trống (Available)
+                                    </option>
+                                    <option value="Đang sử dụng" th:selected="${selectedStatus == 'Đang sử dụng'}">Đang
+                                        sử dụng (Occupied)</option>
+                                    <option value="Đang dọn" th:selected="${selectedStatus == 'Đang dọn'}">Đang dọn
+                                        (Cleaning)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex justify-content-between mb-0">
+                                <button class="btn btn-custom px-4 py-2 mr-2" id="btn-apply-filters" style="flex: 1;">
+                                    Filter
+                                </button>
+                                <button class="btn btn-custom-dark px-4 py-2" id="btn-reset-filters" style="flex: 1;">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALERT AREA -->
+            <div class="row" th:if="${successMessage != null or errorMessage != null}">
+                <div class="col-12">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius:0;"
+                        th:if="${successMessage != null}">
+                        <span th:text="${successMessage}"></span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius:0;"
+                        th:if="${errorMessage != null}">
+                        <span th:text="${errorMessage}"></span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROOMS TABLE -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped text-center">
+                            <thead>
+                                <tr>
+                                    <th>Branch ID</th>
+                                    <th>Room Number</th>
+                                    <th>Floor</th>
+                                    <th>Category</th>
+                                    <th>Base Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rooms-table-body">
+                                <tr th:each="r : ${rooms}" class="room-row">
+                                    <td th:text="'Branch ' + ${r.id.branchId}">Branch 1</td>
+                                    <td><strong th:text="${r.id.roomNo}">305</strong></td>
+                                    <td th:text="${r.floor}">3</td>
+                                    <td th:text="${r.roomType != null ? r.roomType.typeName : 'N/A'}">Standard</td>
+                                    <td
+                                        th:text="${r.roomType != null ? #numbers.formatDecimal(r.roomType.basePrice, 1, 'POINT', 0, 'COMMA') + ' VND' : '0 VND'}">
+                                        100.000 VND</td>
+                                    <td>
+                                        <span class="badge"
+                                            th:classappend="${r.roomStatus == 'Trống' ? 'badge-status-empty' : (r.roomStatus == 'Đang dọn' ? 'badge-status-cleaning' : 'badge-status-occupied')}"
+                                            th:text="${r.roomStatus}">Trống</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-custom-dark edit-btn px-2 py-1 mr-1"
+                                            th:data-branch="${r.id.branchId}" th:data-roomno="${r.id.roomNo}"
+                                            th:data-floor="${r.floor}"
+                                            th:data-type="${r.roomType != null ? r.roomType.roomTypeId : ''}"
+                                            th:data-status="${r.roomStatus}">Edit</button>
+
+                                        <form th:action="@{/manager/rooms/delete}" method="post" style="display:inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this room?');">
+                                            <input type="hidden" name="branchId" th:value="${r.id.branchId}">
+                                            <input type="hidden" name="roomNo" th:value="${r.id.roomNo}">
+                                            <button type="submit"
+                                                class="btn btn-sm btn-custom-danger px-2 py-1">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(rooms)}">
+                                    <td colspan="7" class="py-4 text-muted">No rooms match the selected filters.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination Container -->
+            <div class="row mt-4">
+                <div class="col-12" id="pagination-container"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="ftco-footer ftco-section img" style="background-image: url('/images/bg_4.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Harbor Lights</h2>
+                        <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia,
+                            there live the blind texts.</p>
+                        <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+                            <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4 ml-md-5">
+                        <h2 class="ftco-heading-2">Useful Links</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Blog</a></li>
+                            <li><a href="#" class="py-2 d-block">Rooms</a></li>
+                            <li><a href="#" class="py-2 d-block">Amenities</a></li>
+                            <li><a href="#" class="py-2 d-block">Gift Card</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Privacy</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Career</a></li>
+                            <li><a href="#" class="py-2 d-block">About Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Contact Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Services</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Have a Questions?</h2>
+                        <div class="block-23 mb-3">
+                            <ul>
+                                <li><span class="icon icon-map-marker"></span><span class="text">203 Fake St. Mountain
+                                        View, San Francisco, California, USA</span></li>
+                                <li><a href="#"><span class="icon icon-phone"></span><span class="text">+2 392 3929
+                                            210</span></a></li>
+                                <li><a href="#"><span class="icon icon-envelope"></span><span
+                                            class="text">info@yourdomain.com</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>
+                        Copyright &copy;
+                        <script>document.write(new Date().getFullYear());</script> All rights reserved | This template
+                        is made with <i class="icon-heart color-danger" aria-hidden="true"></i> by <a
+                            href="https://colorlib.com" target="_blank">Colorlib</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ROOM FORM MODAL -->
+    <div class="modal fade" id="roomModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0 pl-0 pr-0">
+                    <h5 class="modal-title font-weight-bold" id="modalTitle">Add Room</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body pl-0 pr-0">
+                    <form id="room-form" th:action="@{/manager/rooms/save}" method="post" novalidate>
+                        <input type="hidden" id="isEdit" name="isEdit" value="false">
+                        <input type="hidden" id="hiddenBranchId" name="branchId" value="1">
+                        <input type="hidden" id="hiddenRoomNo" name="roomNo" value="">
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="branchId" class="font-weight-bold text-dark">Branch ID</label>
+                                <select class="form-control" id="branchId" required>
+                                    <option value="1">Branch 1</option>
+                                    <option value="2">Branch 2</option>
+                                    <option value="3">Branch 3</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="roomNo" class="font-weight-bold text-dark">Room Number</label>
+                                <input type="text" class="form-control" id="roomNo" placeholder="e.g. 305"
+                                    maxlength="10" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="floor" class="font-weight-bold text-dark">Floor</label>
+                                <input type="number" class="form-control" name="floor" id="floor" placeholder="e.g. 3"
+                                    required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="roomStatus" class="font-weight-bold text-dark">Status</label>
+                                <select class="form-control" name="roomStatus" id="roomStatus">
+                                    <option value="Trống">Trống</option>
+                                    <option value="Đang sử dụng">Đang sử dụng</option>
+                                    <option value="Đang dọn">Đang dọn</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="roomTypeId" class="font-weight-bold text-dark">Room Category</label>
+                            <select class="form-control" name="roomTypeId" id="roomTypeId" required>
+                                <option value="">Select a category</option>
+                                <option th:each="rt : ${roomTypes}" th:value="${rt.roomTypeId}"
+                                    th:text="${rt.typeName} + ' (' + ${#numbers.formatDecimal(rt.basePrice, 1, 'POINT', 0, 'COMMA')} + ' VND/night)'">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="text-right mt-4">
+                            <button type="button" class="btn btn-secondary px-4 py-2" data-dismiss="modal"
+                                style="border-radius: 0;">Cancel</button>
+                            <button type="submit" class="btn btn-custom px-4 py-2" id="btn-save-submit">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px">
+            <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee" />
+            <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+                stroke="#F96D00" />
+        </svg></div>
+
+    <div th:replace="~{manager/manager-header :: scripts}"></div>
+    <script src="/js/search-pagination.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            // Filters application redirection
+            $('#btn-apply-filters').click(function (e) {
+                e.preventDefault();
+                applyFilters();
+            });
+
+            $('#btn-reset-filters').click(function () {
+                window.location.href = '/manager/rooms';
+            });
+
+            function applyFilters() {
+                let branch = $('#filter-branch').val();
+                let status = $('#filter-status').val();
+                let search = $('#search-rooms').val();
+                let params = [];
+                if (branch && branch !== 'ALL') params.push('branchId=' + encodeURIComponent(branch));
+                if (status && status !== 'ALL') params.push('status=' + encodeURIComponent(status));
+                if (search && search.trim() !== '') params.push('search=' + encodeURIComponent(search.trim()));
+                let url = '/manager/rooms';
+                if (params.length > 0) {
+                    url += '?' + params.join('&');
+                }
+                window.location.href = url;
+            }
+
+            // Sync hidden inputs for forms
+            $('#branchId').change(function () {
+                $('#hiddenBranchId').val($(this).val());
+            });
+            $('#roomNo').on('input', function () {
+                $('#hiddenRoomNo').val($(this).val());
+            });
+
+            // Edit room event listener
+            $('.edit-btn').click(function () {
+                let branch = $(this).data('branch');
+                let roomNo = $(this).data('roomno');
+                let floor = $(this).data('floor');
+                let roomTypeId = $(this).data('type');
+                let status = $(this).data('status');
+
+                $('#modalTitle').text(`Edit Room: Branch ${branch} - Room ${roomNo}`);
+                $('#isEdit').val('true');
+
+                // Populate and freeze primary composite key inputs
+                $('#branchId').val(branch).prop('disabled', true);
+                $('#hiddenBranchId').val(branch);
+                $('#roomNo').val(roomNo).prop('readonly', true);
+                $('#hiddenRoomNo').val(roomNo);
+
+                $('#floor').val(floor);
+                $('#roomStatus').val(status);
+                $('#roomTypeId').val(roomTypeId);
+
+                $('#roomModal').modal('show');
+            });
+
+            // Open Modal for Add
+            $('#btn-add-room').click(function () {
+                $('#modalTitle').text('Add New Room');
+                $('#room-form')[0].reset();
+                $('#isEdit').val('false');
+                $('#branchId').prop('disabled', false).val('1');
+                $('#hiddenBranchId').val('1');
+                $('#roomNo').prop('readonly', false).val('');
+                $('#hiddenRoomNo').val('');
+                $('#roomModal').modal('show');
+            });
+
+            // Validation handler
+            $('#room-form').submit(function (e) {
+                // Final synchronization check of critical fields
+                $('#hiddenBranchId').val($('#branchId').val());
+                $('#hiddenRoomNo').val($('#roomNo').val().trim());
+
+                let roomNo = $('#roomNo').val().trim();
+                let floor = $('#floor').val();
+                let roomTypeId = $('#roomTypeId').val();
+
+                if (!roomNo) {
+                    alert('Please enter room number.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (!floor || isNaN(floor)) {
+                    alert('Please enter a valid floor number.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (!roomTypeId) {
+                    alert('Please select a room category.');
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Initialize Search & Pagination
+            console.log('Debugging search-pagination elements:');
+            console.log('  #search-rooms count:', $('#search-rooms').length);
+            console.log('  #rooms-table-body count:', $('#rooms-table-body').length);
+            console.log('  #pagination-container count:', $('#pagination-container').length);
+            console.log('  .room-row count:', $('.room-row').length);
+
+            initSearchPagination({
+                searchInputId: '#search-rooms',
+                itemContainerSelector: '#rooms-table-body',
+                itemSelector: '.room-row',
+                paginationContainerId: '#pagination-container',
+                pageSize: 5,
+                searchFields: ['td:nth-child(2) strong', 'td:nth-child(3)', 'td:nth-child(4)'],
+                triggerBtnId: '#btn-apply-filters'
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{Customer/customer-header :: head('Tìm phòng | Harbor Lights')}"></head>
+<body>
+<nav th:replace="~{Customer/customer-header :: nav('rooms')}"></nav>
+<section class="hero-wrap hero-wrap-2 customer-hero" style="background-image: url('/images/bg_1.jpg');">
+  <div class="overlay"></div><div class="container"><div class="row no-gutters slider-text align-items-center justify-content-center"><div class="col-md-9 ftco-animate text-center"><p class="breadcrumbs"><span><a href="/customer/home">Trang chủ</a></span></p><h1 class="mb-0 bread">Tìm phòng</h1><p class="hero-subtitle">Chọn ngày lưu trú và căn phòng phù hợp với chuyến đi của bạn.</p></div></div></div>
+</section>
+<section class="ftco-section bg-light"><div class="container">
+<div class="customer-search-box ftco-animate"><form method="get" th:action="@{/customer/rooms}"><div class="row align-items-end">
+  <div class="col-md-6 col-lg"><div class="form-group"><label>Ngày nhận phòng</label><input type="date" class="form-control" name="checkIn" th:value="${checkIn}" required></div></div>
+  <div class="col-md-6 col-lg"><div class="form-group"><label>Ngày trả phòng</label><input type="date" class="form-control" name="checkOut" th:value="${checkOut}" required></div></div>
+  <div class="col-md-6 col-lg"><div class="form-group"><label>Loại phòng</label><select class="form-control" name="roomTypeId"><option value="">Tất cả</option><option th:each="t : ${roomTypes}" th:value="${t.roomTypeId}" th:text="${t.typeName}" th:selected="${t.roomTypeId == roomTypeId}">Deluxe</option></select></div></div>
+  <div class="col-md-3 col-lg"><div class="form-group"><label>Số khách</label><input type="number" min="1" class="form-control" name="capacity" th:value="${capacity}" placeholder="2"></div></div>
+  <div class="col-md-3 col-lg"><div class="form-group"><label>Chi nhánh</label><input type="number" min="1" class="form-control" name="branchId" th:value="${branchId}" placeholder="Tất cả"></div></div>
+  <div class="col-md-12 col-lg-auto"><button type="submit" class="btn btn-primary customer-search-btn"><span class="ion-ios-search"></span> Tìm phòng</button></div>
+</div></form></div>
+<div th:if="${errorMessage}" class="alert alert-danger mt-4" th:text="${errorMessage}"></div>
+<div th:if="${rooms != null}" class="mt-5"><div class="row justify-content-between align-items-center mb-4"><div class="col"><span class="subheading">Kết quả tìm kiếm</span><h2 class="mb-0">Phòng đang còn trống</h2></div></div>
+<div class="row">
+  <div class="col-md-6 col-lg-4 d-flex ftco-animate" th:each="room : ${rooms}">
+    <div class="room customer-room-card w-100">
+      <a class="img d-flex align-items-end" th:style="|background-image:url('@{/images/room-1.jpg}')|">
+        <div class="price"><span th:text="${#numbers.formatDecimal(room.roomType.basePrice,0,'COMMA',0,'POINT')}">0</span><small>₫/đêm</small></div>
+      </a>
+      <div class="text p-4">
+        <h3 th:text="${room.roomType.typeName}">Deluxe</h3>
+        <p class="room-meta">
+          <span><i class="ion-ios-home"></i> Phòng <b th:text="${room.id.roomNo}">101</b></span>
+          <span><i class="ion-ios-people"></i> <b th:text="${room.roomType.capacity}">2</b> khách</span>
+          <span><i class="ion-ios-pin"></i> Chi nhánh <b th:text="${room.id.branchId}">1</b></span>
+        </p>
+        <a th:href="@{/customer/booking(branchId=${room.id.branchId},roomNo=${room.id.roomNo},checkIn=${checkIn},checkOut=${checkOut})}" class="btn btn-primary btn-block">Đặt phòng</a>
+      </div>
+    </div>
+  </div>
+</div><div th:if="${#lists.isEmpty(rooms)}" class="customer-empty-state"><span class="ion-ios-bed"></span><h3>Không tìm thấy phòng phù hợp</h3><p>Hãy thử thay đổi ngày lưu trú hoặc điều kiện tìm kiếm.</p></div></div>
+</div></section>
+<div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+<div th:replace="~{Customer/customer-header :: scripts}"></div>
+</body></html>

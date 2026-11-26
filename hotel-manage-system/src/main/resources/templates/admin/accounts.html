@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{admin/admin-header :: head('Quản lý Tài khoản - Admin — Harbor Lights')}"></th:block>
+    <style>
+        .btn-custom {
+            background: #f96d00;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom:hover {
+            background: #e06200;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(249, 109, 0, 0.3);
+        }
+
+        .btn-custom-danger {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-danger:hover {
+            background: #c82333;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn-custom-dark {
+            background: #1e1e24;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-dark:hover {
+            background: #0b0b0d;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .table {
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .table thead th {
+            border-bottom: 2px solid #f96d00;
+            color: #222;
+            font-weight: 700;
+        }
+
+        .badge-status-active {
+            background-color: #28a745 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+
+        .badge-status-inactive {
+            background-color: #6c757d !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+
+        .badge-status-banned {
+            background-color: #343a40 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+
+        .modal-content {
+            border-radius: 0;
+            border: none;
+        }
+
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<div th:replace="~{admin/admin-header :: navbar}"></div>
+
+<!-- HERO HEADER -->
+<div class="hero-wrap" style="background-image: url('/images/bg_2.jpg');">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+            <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                <div class="text">
+                    <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/index.html">Home</a></span>
+                        <span>Admin</span></p>
+                    <h1 class="mb-4 bread">Account Management</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<section class="ftco-section bg-light">
+    <div class="container">
+        <div class="row justify-content-between align-items-center mb-4">
+            <div class="col-md-8">
+                <h2>System Accounts</h2>
+                <p class="text-muted">Create new accounts, assign roles, and manage account statuses.</p>
+            </div>
+            <div class="col-md-4 text-md-right">
+                <button class="btn btn-custom px-4 py-3" id="btn-add-account">
+                    + Add Account
+                </button>
+            </div>
+        </div>
+
+        <!-- SEARCH FILTER -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <form th:action="@{/admin/accounts}" method="get" class="form-inline bg-white p-3 border d-flex justify-content-between">
+                    <div class="d-flex">
+                        <div class="form-group mr-3">
+                            <input type="text" class="form-control" name="email" placeholder="Search by Email..." th:value="${searchEmail}">
+                        </div>
+                        <div class="form-group mr-3">
+                            <select class="form-control" name="roleId">
+                                <option value="">All Roles</option>
+                                <option th:each="r : ${roles}" th:value="${r.roleId}" th:text="${r.roleName}" th:selected="${searchRoleId == r.roleId}"></option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-custom px-4 py-2">Search</button>
+                    </div>
+                    <a th:href="@{/admin/accounts}" class="btn btn-outline-secondary px-4 py-2">Clear Filter</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- ALERT AREA -->
+        <div class="row" th:if="${successMessage != null or errorMessage != null}">
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius:0;"
+                     th:if="${successMessage != null}">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius:0;"
+                     th:if="${errorMessage != null}">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCOUNTS TABLE -->
+        <div class="row">
+            <div class="col-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped text-center">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="acc : ${accounts}">
+                            <td th:text="${acc.userId}">1</td>
+                            <td><strong th:text="${acc.username}">admin</strong></td>
+                            <td th:text="${acc.email}">admin@hms.com</td>
+                            <td th:text="${acc.role != null ? acc.role.roleName : 'N/A'}">Admin</td>
+                            <td>
+                                        <span class="badge"
+                                              th:classappend="${acc.status.name() == 'ACTIVE' ? 'badge-status-active' : (acc.status.name() == 'INACTIVE' ? 'badge-status-inactive' : 'badge-status-banned')}"
+                                              th:text="${acc.status.name()}">ACTIVE</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-custom-dark edit-btn px-2 py-1 mr-1"
+                                        th:data-id="${acc.userId}" th:data-username="${acc.username}"
+                                        th:data-email="${acc.email}"
+                                        th:data-role="${acc.role != null ? acc.role.roleId : ''}">Edit
+                                </button>
+
+                                <form th:action="@{/admin/accounts/status}" method="post" style="display:inline;"
+                                      onsubmit="return confirm('Are you sure you want to change this account\'s status?');">
+                                    <input type="hidden" name="accountId" th:value="${acc.userId}">
+                                    <input type="hidden" name="status"
+                                           th:value="${acc.status.name() == 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'}">
+                                    <button type="submit" class="btn btn-sm px-2 py-1"
+                                            th:classappend="${acc.status.name() == 'ACTIVE' ? 'btn-custom-danger' : 'btn-success'}"
+                                            th:text="${acc.status.name() == 'ACTIVE' ? 'Deactivate' : 'Activate'}">
+                                        Deactivate
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(accounts)}">
+                            <td colspan="6" class="py-4 text-muted">No accounts found.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="ftco-footer ftco-section img" style="background-image: url('/images/bg_4.jpg');">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p>
+                    Copyright &copy;<script>document.write(new Date().getFullYear());</script>
+                    All rights reserved
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ACCOUNT FORM MODAL -->
+<div class="modal fade" id="accountModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content p-4">
+            <div class="modal-header border-0 pl-0 pr-0">
+                <h5 class="modal-title font-weight-bold" id="modalTitle">Add Account</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body pl-0 pr-0">
+                <form id="account-form" th:action="@{/admin/accounts/save}" method="post" novalidate>
+                    <input type="hidden" id="accountId" name="accountId" value="">
+
+                    <div class="form-group">
+                        <label for="username" class="font-weight-bold text-dark">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="e.g. johndoe"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="font-weight-bold text-dark">Email</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               placeholder="e.g. john@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="font-weight-bold text-dark">Password</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="Leave empty if not changing">
+                        <small class="form-text text-muted" id="passwordHelp">For new accounts, password is
+                            required.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="roleId" class="font-weight-bold text-dark">Role</label>
+                        <select class="form-control" name="roleId" id="roleId" required>
+                            <option value="">Select a role</option>
+                            <option th:each="r : ${roles}" th:value="${r.roleId}" th:text="${r.roleName}"></option>
+                        </select>
+                    </div>
+
+                    <div class="text-right mt-4">
+                        <button type="button" class="btn btn-secondary px-4 py-2" data-dismiss="modal"
+                                style="border-radius: 0;">Cancel
+                        </button>
+                        <button type="submit" class="btn btn-custom px-4 py-2" id="btn-save-submit">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- loader -->
+<div id="ftco-loader" class="show fullscreen">
+    <svg class="circular" width="48px" height="48px">
+        <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/>
+        <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+                stroke="#F96D00"/>
+    </svg>
+</div>
+
+<div th:replace="~{admin/admin-header :: scripts}"></div>
+
+<script>
+    $(document).ready(function () {
+        // Edit account
+        $('.edit-btn').click(function () {
+            let id = $(this).data('id');
+            let username = $(this).data('username');
+            let email = $(this).data('email');
+            let roleId = $(this).data('role');
+
+            $('#modalTitle').text(`Edit Account: ${username}`);
+            $('#accountId').val(id);
+            $('#username').val(username).prop('readonly', true); // Cannot change username
+            $('#email').val(email);
+            $('#roleId').val(roleId);
+            $('#password').val('').attr('required', false);
+            $('#passwordHelp').text('Leave empty to keep existing password.');
+
+            $('#accountModal').modal('show');
+        });
+
+        // Open Modal for Add
+        $('#btn-add-account').click(function () {
+            $('#modalTitle').text('Add New Account');
+            $('#account-form')[0].reset();
+            $('#accountId').val('');
+            $('#username').prop('readonly', false);
+            $('#password').attr('required', true);
+            $('#passwordHelp').text('Password is required for new accounts.');
+            $('#accountModal').modal('show');
+        });
+
+        // Validation handler
+        $('#account-form').submit(function (e) {
+            let username = $('#username').val().trim();
+            let email = $('#email').val().trim();
+            let roleId = $('#roleId').val();
+            let accountId = $('#accountId').val();
+            let password = $('#password').val();
+
+            if (!username || !email || !roleId) {
+                alert('Please fill in all required fields.');
+                e.preventDefault();
+                return false;
+            }
+
+            if (!accountId && !password) {
+                alert('Please enter a password for the new account.');
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>
+</body>
+</html>

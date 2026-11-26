@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{receptionist/receptionist-header :: head('Đăng ký Walk-in Lễ tân — Khách sạn Harbor Lights')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        
+        .form-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0;
+            padding: 35px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{receptionist/receptionist-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/receptionist/home">Trang chủ</a></span> <span>Walk-In</span></p>
+                        <h1 class="mb-4 bread">Đăng Ký Khách Vãng Lai (Walk-in)</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    
+                    <!-- ALERTS -->
+                    <div th:if="${errorMessage != null}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert" style="border-radius: 0;">
+                        <span th:text="${errorMessage}">Error message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="form-card">
+                        <h3 class="font-weight-bold text-dark border-bottom pb-3 mb-4">Đăng Ký Nhận Phòng Trực Tiếp Tại Quầy</h3>
+                        
+                        <form id="walkin-form" th:action="@{/receptionist/walkin/save}" method="post" novalidate>
+                            <!-- Hidden inputs synced via JS -->
+                            <input type="hidden" id="branchId" name="branchId">
+                            <input type="hidden" id="roomNo" name="roomNo">
+
+                            <!-- Section: Guest Profile -->
+                            <h5 class="font-weight-bold text-primary mb-3">1. Thông tin khách hàng</h5>
+                            <div class="row">
+                                <div class="form-group col-md-6">
+                                    <label for="guestName" class="font-weight-bold text-dark">Họ và tên khách hàng *</label>
+                                    <input type="text" class="form-control" name="guestName" id="guestName" placeholder="Ví dụ: Nguyễn Văn A" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="cccd" class="font-weight-bold text-dark">Số CCCD / ID Card *</label>
+                                    <input type="text" class="form-control" name="cccd" id="cccd" placeholder="Số CCCD gồm 9 - 12 chữ số" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="form-group col-md-6">
+                                    <label for="phone" class="font-weight-bold text-dark">Số điện thoại *</label>
+                                    <input type="text" class="form-control" name="phone" id="phone" placeholder="Số điện thoại liên lạc" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="address" class="font-weight-bold text-dark">Địa chỉ thường trú</label>
+                                    <input type="text" class="form-control" name="address" id="address" placeholder="Thành phố, Tỉnh, Địa chỉ cư trú">
+                                </div>
+                            </div>
+
+                            <!-- Section: Stay details -->
+                            <h5 class="font-weight-bold text-primary mb-3">2. Thông tin đăng ký lưu trú</h5>
+                            
+                            <div class="form-group">
+                                <label for="roomSelector" class="font-weight-bold text-dark">Chọn phòng trống còn hoạt động *</label>
+                                <select class="form-control" id="roomSelector" required>
+                                    <option value="">-- Chọn phòng đang Trống --</option>
+                                    <option th:each="r : ${vacantRooms}"
+                                            th:value="${r.id.branchId + '_' + r.id.roomNo}"
+                                            th:data-branch="${r.id.branchId}"
+                                            th:data-room="${r.id.roomNo}"
+                                            th:data-capacity="${r.roomType.capacity}"
+                                            th:selected="${r.id.branchId == preselectedBranchId && r.id.roomNo == preselectedRoomNo}"
+                                            th:text="${'Chi nhánh ' + r.id.branchId + ' - Phòng ' + r.id.roomNo + ' (' + r.roomType.typeName + ' - Tối đa ' + r.roomType.capacity + ' khách - ' + #numbers.formatDecimal(r.roomType.basePrice, 1, 'POINT', 0, 'COMMA') + ' VND/đêm)'}"></option>
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <!-- Walk-in is check-in today, so date input is default today -->
+                                    <label for="checkInDate" class="font-weight-bold text-dark">Ngày nhận phòng *</label>
+                                    <input type="date" class="form-control" name="checkInDate" id="checkInDate" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" readonly required>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="checkOutDate" class="font-weight-bold text-dark">Ngày trả phòng dự kiến *</label>
+                                    <input type="date" class="form-control" name="checkOutDate" id="checkOutDate" required>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="numberOfGuest" class="font-weight-bold text-dark">Số lượng khách *</label>
+                                    <input type="number" class="form-control" name="numberOfGuest" id="numberOfGuest" value="1" min="1" required>
+                                    <small id="capacity-warning" class="text-danger font-weight-bold d-none">Vượt quá sức chứa phòng!</small>
+                                </div>
+                            </div>
+
+                            <div class="text-right mt-4 pt-3 border-top">
+                                <a href="/receptionist/rooms" class="btn btn-secondary px-4 py-3 mr-2" style="border-radius: 0;">Huỷ bỏ</a>
+                                <button type="submit" class="btn btn-custom px-5 py-3 font-weight-bold">
+                                    Hoàn Tất Đặt Phòng & Nhận Phòng (Check-In)
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{receptionist/receptionist-header :: scripts}"></div>
+
+    <script>
+        $(document).ready(function() {
+            // Set default checkout date to tomorrow
+            let today = new Date();
+            let tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            let formattedTomorrow = tomorrow.toISOString().split('T')[0];
+            $('#checkOutDate').val(formattedTomorrow);
+            $('#checkOutDate').attr('min', today.toISOString().split('T')[0]);
+
+            // Sync hidden branchId and roomNo on selector change
+            function syncSelectedRoom() {
+                let selectedOption = $('#roomSelector').find('option:selected');
+                if (selectedOption.val()) {
+                    let branch = selectedOption.data('branch');
+                    let room = selectedOption.data('room');
+                    $('#branchId').val(branch);
+                    $('#roomNo').val(room);
+                } else {
+                    $('#branchId').val('');
+                    $('#roomNo').val('');
+                }
+                checkCapacity();
+            }
+
+            $('#roomSelector').change(syncSelectedRoom);
+            
+            // Trigger sync on load in case of preselected room from grid
+            syncSelectedRoom();
+
+            // Validate capacity dynamically
+            function checkCapacity() {
+                let selectedOption = $('#roomSelector').find('option:selected');
+                let count = parseInt($('#numberOfGuest').val());
+                if (selectedOption.val() && count) {
+                    let capacity = parseInt(selectedOption.data('capacity'));
+                    if (count > capacity) {
+                        $('#capacity-warning').removeClass('d-none').text(`Vượt quá sức chứa phòng (Tối đa ${capacity} người!)`);
+                    } else {
+                        $('#capacity-warning').addClass('d-none');
+                    }
+                } else {
+                    $('#capacity-warning').addClass('d-none');
+                }
+            }
+
+            $('#numberOfGuest').on('input change', checkCapacity);
+
+            // Client side validation on submit
+            $('#walkin-form').submit(function(e) {
+                let guestName = $('#guestName').val().trim();
+                let cccd = $('#cccd').val().trim();
+                let phone = $('#phone').val().trim();
+                let selectedRoom = $('#roomSelector').val();
+                let checkOutDate = $('#checkOutDate').val();
+                let guests = parseInt($('#numberOfGuest').val());
+
+                if (!guestName) {
+                    alert('Vui lòng nhập họ tên khách hàng.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (!cccd || cccd.length < 9 || cccd.length > 12 || isNaN(cccd)) {
+                    alert('Số CCCD không hợp lệ. Vui lòng nhập từ 9 đến 12 chữ số.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (!phone || isNaN(phone)) {
+                    alert('Số điện thoại không hợp lệ. Vui lòng chỉ nhập số.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (!selectedRoom) {
+                    alert('Vui lòng chọn phòng trống.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (!checkOutDate) {
+                    alert('Vui lòng nhập ngày trả phòng dự kiến.');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                let selectedOption = $('#roomSelector').find('option:selected');
+                let capacity = parseInt(selectedOption.data('capacity'));
+                if (guests > capacity) {
+                    alert(`Số khách (${guests}) vượt quá sức chứa tối đa của phòng (${capacity} người).`);
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

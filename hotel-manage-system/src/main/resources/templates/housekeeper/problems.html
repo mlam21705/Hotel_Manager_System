@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{housekeeper/housekeeper-header :: head('Report Issue - Housekeeper — Harbor Lights Hotel')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        
+        .table {
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .table thead th {
+            border-bottom: 2px solid #f96d00;
+            color: #222;
+            font-weight: 700;
+        }
+        
+        .badge-status-open {
+            background-color: #dc3545 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        .badge-status-inprogress {
+            background-color: #fca311 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        .badge-status-resolved {
+            background-color: #28a745 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        
+        .form-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+        .room-option:hover, .room-option:focus {
+            background-color: #f96d00 !important;
+            color: #fff !important;
+        }
+        .dropdown-item.active, .dropdown-item:active {
+            background-color: #f96d00 !important;
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{housekeeper/housekeeper-header :: navbar}"></div>
+
+    <!-- HERO SECTION -->
+    <section class="hero-wrap hero-wrap-2" style="background-image: url('/images/bg_3.jpg');" data-stellar-background-ratio="0.5">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center">
+                    <p class="breadcrumbs"><span class="mr-2">Housekeeper</span> <span>Issues</span></p>
+                    <h1 class="mb-3 bread">Report Room Issue</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENT SECTION -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            <!-- Messages -->
+            <div class="row mb-3" th:if="${successMessage != null or errorMessage != null}">
+                <div class="col-md-12">
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${successMessage}">Success message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${errorMessage}">Error message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- REPORT ISSUE FORM -->
+                <div class="col-md-4 mb-4">
+                    <div class="form-card">
+                        <h4 class="font-weight-bold text-dark mb-4">New Maintenance Report</h4>
+                        <form method="post" action="/housekeeper/problems/report" id="report-form" th:attr="data-has-rooms=${!#lists.isEmpty(assignedRooms)}">
+                            <input type="hidden" name="branchId" id="hidden-branch-id" value="">
+                            <input type="hidden" name="roomNo" id="hidden-room-no" value="">
+
+                            <div th:if="${#lists.isEmpty(assignedRooms)}" class="alert alert-warning" style="border-radius: 0;">
+                                No rooms found in the database.
+                            </div>
+                            <div class="form-group dropdown" th:unless="${#lists.isEmpty(assignedRooms)}">
+                                <label for="room-search" class="font-weight-bold text-dark">Select Room</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control dropdown-toggle" id="room-search" placeholder="Type to search room..." autocomplete="off" required>
+                                    <div class="dropdown-menu w-100" id="room-dropdown-menu" style="max-height: 200px; overflow-y: auto; border-radius: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 2px;">
+                                        <a class="dropdown-item room-option text-muted" href="#" data-value="" data-branch="" data-roomno="">-- Choose Room --</a>
+                                        <a th:each="room : ${assignedRooms}"
+                                           class="dropdown-item room-option"
+                                           href="#"
+                                           th:attr="data-branch=${room.id.branchId}, data-roomno=${room.id.roomNo}"
+                                           th:text="'Room ' + ${room.id.roomNo} + ' (Branch ' + ${room.id.branchId} + ')'"></a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group" th:unless="${#lists.isEmpty(assignedRooms)}">
+                                <label for="issue-description" class="font-weight-bold text-dark">Issue Description</label>
+                                <textarea class="form-control" id="issue-description" name="issueDescription" rows="5" placeholder="Describe the damaged facilities or maintenance issues found in the room..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-custom btn-block py-3 mt-4" th:disabled="${#lists.isEmpty(assignedRooms)}">Submit Report</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- REPORT HISTORY TABLE -->
+                <div class="col-md-8">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th>Room</th>
+                                    <th>Branch</th>
+                                    <th>Issue Description</th>
+                                    <th>Report Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="report : ${problems}">
+                                    <td><strong th:text="${report.room.id.roomNo}">101</strong></td>
+                                    <td th:text="'Branch ' + ${report.room.id.branchId}">Branch 1</td>
+                                    <td class="text-left" th:text="${report.issueDescription}">Broken light bulb</td>
+                                    <td th:text="${#temporals.format(report.reportDate, 'yyyy-MM-dd HH:mm')}">2026-07-07 09:30</td>
+                                    <td>
+                                        <span class="badge"
+                                              th:classappend="${report.resolveStatus.name() == 'PENDING' ? 'badge-status-open' : (report.resolveStatus.name() == 'PROCESSING' ? 'badge-status-inprogress' : 'badge-status-resolved')}"
+                                              th:text="${report.resolveStatus.name()}">PENDING</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(problems)}">
+                                    <td colspan="5" class="py-4 text-muted">You have not reported any issues yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="ftco-footer ftco-section img" style="background-image: url('/images/bg_4.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Harbor Lights</h2>
+                        <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+                        <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+                            <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4 ml-md-5">
+                        <h2 class="ftco-heading-2">Useful Links</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Blog</a></li>
+                            <li><a href="#" class="py-2 d-block">Rooms</a></li>
+                            <li><a href="#" class="py-2 d-block">Amenities</a></li>
+                            <li><a href="#" class="py-2 d-block">Gift Card</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Privacy</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Career</a></li>
+                            <li><a href="#" class="py-2 d-block">About Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Contact Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Services</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Have Questions?</h2>
+                        <div class="block-23 mb-3">
+                            <ul>
+                                <li><span class="icon icon-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+                                <li><a href="#"><span class="icon icon-phone"></span><span class="text">+2 392 3929 210</span></a></li>
+                                <li><a href="#"><span class="icon icon-envelope"></span><span class="text">info@yourdomain.com</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>
+                        Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart color-danger" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{housekeeper/housekeeper-header :: scripts}"></div>
+    
+    <script>
+        $(document).ready(function() {
+            var $search = $('#room-search');
+            var $menu = $('#room-dropdown-menu');
+
+            // Open dropdown when focused or clicked
+            $search.on('focus click', function(e) {
+                e.stopPropagation();
+                $menu.addClass('show');
+            });
+
+            // Hide dropdown when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.dropdown').length) {
+                    $menu.removeClass('show');
+                }
+            });
+
+            // Filter options when typing
+            $search.on('input', function() {
+                $menu.addClass('show');
+                var val = $(this).val().toLowerCase().trim();
+                
+                var matchCount = 0;
+                $('.room-option').each(function() {
+                    var text = $(this).text().toLowerCase();
+                    // Keep default option visible if search is empty
+                    if ($(this).attr('data-value') === "") {
+                        if (!val) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                        return;
+                    }
+                    
+                    if (text.includes(val)) {
+                        $(this).show();
+                        matchCount++;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            // Handle option selection
+            $(document).on('click', '.room-option', function(e) {
+                e.preventDefault();
+                var text = $(this).text();
+                var branchId = $(this).attr('data-branch') || '';
+                var roomNo = $(this).attr('data-roomno') || '';
+
+                if (branchId === '' && roomNo === '') {
+                    $search.val('');
+                    $('#hidden-branch-id').val('');
+                    $('#hidden-room-no').val('');
+                } else {
+                    $search.val(text);
+                    $('#hidden-branch-id').val(branchId);
+                    $('#hidden-room-no').val(roomNo);
+                }
+
+                $menu.removeClass('show');
+            });
+
+            // Form submission validation
+            $('#report-form').on('submit', function(e) {
+                if ($('#report-form').attr('data-has-rooms') === 'false') {
+                    e.preventDefault();
+                    return;
+                }
+                var branchId = $('#hidden-branch-id').val();
+                var roomNo = $('#hidden-room-no').val();
+                if (!branchId || !roomNo) {
+                    e.preventDefault();
+                    alert('Please select a room before submitting.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

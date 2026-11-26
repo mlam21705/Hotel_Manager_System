@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>My Profile — Harbor Lights Hotel & Resort</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/css/open-iconic-bootstrap.min.css" th:href="@{/css/open-iconic-bootstrap.min.css}">
+    <link rel="stylesheet" href="/css/animate.css" th:href="@{/css/animate.css}">
+    <link rel="stylesheet" href="/css/owl.carousel.min.css" th:href="@{/css/owl.carousel.min.css}">
+    <link rel="stylesheet" href="/css/owl.theme.default.min.css" th:href="@{/css/owl.theme.default.min.css}">
+    <link rel="stylesheet" href="/css/magnific-popup.css" th:href="@{/css/magnific-popup.css}">
+    <link rel="stylesheet" href="/css/aos.css" th:href="@{/css/aos.css}">
+    <link rel="stylesheet" href="/css/ionicons.min.css" th:href="@{/css/ionicons.min.css}">
+    <link rel="stylesheet" href="/css/bootstrap-datepicker.css" th:href="@{/css/bootstrap-datepicker.css}">
+    <link rel="stylesheet" href="/css/jquery.timepicker.css" th:href="@{/css/jquery.timepicker.css}">
+    <link rel="stylesheet" href="/css/flaticon.css" th:href="@{/css/flaticon.css}">
+    <link rel="stylesheet" href="/css/icomoon.css" th:href="@{/css/icomoon.css}">
+    
+    <link rel="stylesheet" href="/css/style.css" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="/css/auth.css" th:href="@{/css/auth.css}">
+    <link rel="stylesheet" href="/css/luxury-brand.css" th:href="@{/css/luxury-brand.css}">
+</head>
+
+<body>
+
+    <div id="header-container" th:replace="~{header :: navbar}"></div>
+
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg'); height: 400px;" th:style="'background-image: url(' + @{/images/bg_3.jpg} + '); height: 400px;'">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-end justify-content-center" style="height: 400px;">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center" style="padding-bottom: 50px;">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/" th:href="@{/}">Home</a></span> <span>Profile</span></p>
+                        <h1 class="mb-4 bread">My Profile</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="ftco-section bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="auth-card" style="width: 100%; max-width: none; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: white;">
+                        
+                        <h2 class="mb-4" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; color: #111;">Update Personal Information</h2>
+                        
+                        <div th:if="${successMessage}" class="auth-alert" style="background-color: rgba(33,204,122,0.1); color: #21cc7a; border: 1px solid #21cc7a; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <span class="alert-icon">✓</span>
+                            <span th:text="${successMessage}">Profile updated successfully!</span>
+                        </div>
+                        
+                        <div th:if="${errorMessage}" class="auth-alert auth-alert-error" style="margin-bottom: 20px;">
+                            <span class="alert-icon">⚠</span>
+                            <span th:text="${errorMessage}">Error updating profile.</span>
+                        </div>
+
+                        <form action="/profile/update" th:action="@{/profile/update}" th:object="${userProfile}" method="POST" class="contact-form">
+                            
+                            <!-- COMMON FIELDS -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="username" style="font-weight: 600; color: #333;">Username (Read-only)</label>
+                                        <input type="text" id="username" class="form-control" th:field="*{username}" readonly style="background-color: #f8f9fa; cursor: not-allowed; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 16px; color: #495057;">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="email" style="font-weight: 600; color: #333;">Email Address</label>
+                                        <input type="email" id="email" class="form-control" th:field="*{email}" placeholder="Enter your email" required style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 16px; color: #495057;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CUSTOMER ONLY FIELDS -->
+                            <div th:if="${currentUser.role == 'Customer'}" class="customer-fields mt-3">
+                                <h4 class="mb-4" style="font-size: 1.1rem; color: #c5a880; border-bottom: 1px solid #eee; padding-bottom: 10px;">Guest Details</h4>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label for="guestName" style="font-weight: 600; color: #333;">Full Name</label>
+                                            <input type="text" id="guestName" class="form-control" th:field="*{guestName}" placeholder="John Doe" required style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 16px; color: #495057;">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label for="phoneNumber" style="font-weight: 600; color: #333;">Phone Number</label>
+                                            <input type="tel" id="phoneNumber" class="form-control" th:field="*{phoneNumber}" placeholder="0987654321" required style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 16px; color: #495057;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label for="cccd" style="font-weight: 600; color: #333;">CCCD / Passport</label>
+                                            <input type="text" id="cccd" class="form-control" th:field="*{cccd}" placeholder="Identity Number" required style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 16px; color: #495057;">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-4">
+                                            <label for="address" style="font-weight: 600; color: #333;">Address</label>
+                                            <input type="text" id="address" class="form-control" th:field="*{address}" placeholder="Your address" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 16px; color: #495057;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4 pt-3" style="border-top: 1px solid #eee;">
+                                <div class="col-md-12 d-flex justify-content-end">
+                                    <button type="submit" class="auth-btn auth-btn-primary" style="width: auto; padding: 12px 30px;">
+                                        <span class="btn-text">Save Changes</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="footer-container" th:replace="~{footer :: footer}"></div>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px">
+            <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee" />
+            <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+                stroke="#F96D00" />
+        </svg></div>
+
+
+    <script src="/js/jquery.min.js" th:src="@{/js/jquery.min.js}"></script>
+    <script src="/js/jquery-migrate-3.0.1.min.js" th:src="@{/js/jquery-migrate-3.0.1.min.js}"></script>
+    <script src="/js/popper.min.js" th:src="@{/js/popper.min.js}"></script>
+    <script src="/js/bootstrap.min.js" th:src="@{/js/bootstrap.min.js}"></script>
+    <script src="/js/jquery.easing.1.3.js" th:src="@{/js/jquery.easing.1.3.js}"></script>
+    <script src="/js/jquery.waypoints.min.js" th:src="@{/js/jquery.waypoints.min.js}"></script>
+    <script src="/js/jquery.stellar.min.js" th:src="@{/js/jquery.stellar.min.js}"></script>
+    <script src="/js/owl.carousel.min.js" th:src="@{/js/owl.carousel.min.js}"></script>
+    <script src="/js/jquery.magnific-popup.min.js" th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+    <script src="/js/aos.js" th:src="@{/js/aos.js}"></script>
+    <script src="/js/jquery.animateNumber.min.js" th:src="@{/js/jquery.animateNumber.min.js}"></script>
+    <script src="/js/bootstrap-datepicker.js" th:src="@{/js/bootstrap-datepicker.js}"></script>
+    <script src="/js/scrollax.min.js" th:src="@{/js/scrollax.min.js}"></script>
+    <script src="/js/main.js" th:src="@{/js/main.js}"></script>
+    <script src="/js/auth.js" th:src="@{/js/auth.js}"></script>
+
+</body>
+
+</html>

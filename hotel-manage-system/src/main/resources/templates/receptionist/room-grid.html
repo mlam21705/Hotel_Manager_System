@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{receptionist/receptionist-header :: head('Sơ đồ lưới phòng Lễ tân — Khách sạn Harbor Lights')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        
+        .filter-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+        
+        .room-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            transition: all 0.3s;
+            position: relative;
+        }
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+        
+        .room-status-bar {
+            height: 5px;
+            width: 100%;
+        }
+        .bg-status-empty { background-color: #28a745 !important; }
+        .bg-status-occupied { background-color: #007bff !important; }
+        .bg-status-cleaning { background-color: #fca311 !important; }
+        .bg-status-maintenance { background-color: #6c757d !important; }
+
+        .badge-status-empty { background-color: #28a745 !important; color: #fff; border-radius: 0; padding: 3px 8px; font-size: 0.7rem; }
+        .badge-status-occupied { background-color: #007bff !important; color: #fff; border-radius: 0; padding: 3px 8px; font-size: 0.7rem; }
+        .badge-status-cleaning { background-color: #fca311 !important; color: #fff; border-radius: 0; padding: 3px 8px; font-size: 0.7rem; }
+        .badge-status-maintenance { background-color: #6c757d !important; color: #fff; border-radius: 0; padding: 3px 8px; font-size: 0.7rem; }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{receptionist/receptionist-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/receptionist/home">Trang chủ</a></span> <span>Lễ tân</span></p>
+                        <h1 class="mb-4 bread">Lưới Trạng Thái Phòng</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            
+            <div class="row justify-content-between align-items-center mb-4">
+                <div class="col-md-8">
+                    <h2>Giám Sát Trạng Thái Phòng</h2>
+                    <p class="text-muted">Theo dõi và cập nhật trạng thái phòng khách sạn theo thời gian thực.</p>
+                </div>
+            </div>
+
+            <!-- ALERTS -->
+            <div class="row mb-4" th:if="${successMessage != null or errorMessage != null}">
+                <div class="col-12">
+                    <div th:if="${successMessage != null}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${successMessage}">Success message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div th:if="${errorMessage != null}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${errorMessage}">Error message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER CARD -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="filter-card">
+                        <div class="form-row align-items-end">
+                            <div class="form-group col-md-4 mb-0">
+                                <label for="filter-branch" class="font-weight-bold text-dark">Lọc theo Chi nhánh</label>
+                                <select class="form-control" id="filter-branch">
+                                    <option value="ALL" th:selected="${selectedBranch == 'ALL'}">Tất cả chi nhánh</option>
+                                    <option value="1" th:selected="${selectedBranch == '1'}">Chi nhánh 1 (North)</option>
+                                    <option value="2" th:selected="${selectedBranch == '2'}">Chi nhánh 2 (South)</option>
+                                    <option value="3" th:selected="${selectedBranch == '3'}">Chi nhánh 3 (Coastal)</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4 mb-0">
+                                <label for="filter-status" class="font-weight-bold text-dark">Lọc theo Trạng thái</label>
+                                <select class="form-control" id="filter-status">
+                                    <option value="ALL" th:selected="${selectedStatus == 'ALL'}">Tất cả trạng thái</option>
+                                    <option value="Trống" th:selected="${selectedStatus == 'Trống'}">Trống (Vacant)</option>
+                                    <option value="Đang sử dụng" th:selected="${selectedStatus == 'Đang sử dụng'}">Đang sử dụng (Occupied)</option>
+                                    <option value="Đang dọn" th:selected="${selectedStatus == 'Đang dọn'}">Đang dọn (Cleaning)</option>
+                                    <option value="Đang bảo trì" th:selected="${selectedStatus == 'Đang bảo trì'}">Đang bảo trì (Maintenance)</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4 mb-0 text-right">
+                                <button type="button" class="btn btn-custom px-4 py-3" id="btn-reset-filters" style="height: 48px; line-height: 14px;">
+                                    Đặt lại bộ lọc
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROOM GRID BY BRANCH -->
+            <div th:each="entry : ${roomsGroupedByBranch}" class="mb-5">
+                <div class="row mb-3">
+                    <div class="col-12 border-bottom pb-2">
+                        <h3 class="font-weight-bold text-dark" th:text="${'Chi nhánh ' + entry.key}">Chi nhánh X</h3>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-3 col-md-4 col-sm-6" th:each="room : ${entry.value}">
+                        <div class="room-card card h-100">
+                            <!-- Status bar color mapping -->
+                            <div class="room-status-bar" th:classappend="${room.roomStatus == 'Trống' ? 'bg-status-empty' : (room.roomStatus == 'Đang sử dụng' ? 'bg-status-occupied' : (room.roomStatus == 'Đang dọn' ? 'bg-status-cleaning' : 'bg-status-maintenance'))}"></div>
+                            
+                            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h4 class="font-weight-bold mb-0 text-dark" th:text="${'Phòng ' + room.id.roomNo}">Phòng 101</h4>
+                                        <!-- Badge status -->
+                                        <span class="badge" th:classappend="${room.roomStatus == 'Trống' ? 'badge-status-empty' : (room.roomStatus == 'Đang sử dụng' ? 'badge-status-occupied' : (room.roomStatus == 'Đang dọn' ? 'badge-status-cleaning' : 'badge-status-maintenance'))}" th:text="${room.roomStatus}">Trống</span>
+                                    </div>
+                                    <h6 class="text-muted mb-3" th:text="${room.roomType.typeName}">Double Room</h6>
+                                    <p class="mb-1 text-dark" style="font-size: 0.9rem;">
+                                        <strong>Tầng: </strong> <span th:text="${room.floor}">1</span>
+                                    </p>
+                                    <p class="mb-1 text-dark" style="font-size: 0.9rem;">
+                                        <strong>Sức chứa: </strong> <span th:text="${room.roomType.capacity + ' người'}">2 người</span>
+                                    </p>
+                                    <p class="mb-3 text-dark" style="font-size: 0.9rem;">
+                                        <strong>Đơn giá: </strong> <span th:text="${#numbers.formatDecimal(room.roomType.basePrice, 1, 'POINT', 0, 'COMMA') + ' VND/đêm'}">1,000,000 VND/đêm</span>
+                                    </p>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <!-- Context action button -->
+                                    <div th:if="${room.roomStatus == 'Trống'}">
+                                        <a th:href="@{/receptionist/walkin(branchId=${room.id.branchId},roomNo=${room.id.roomNo})}" class="btn btn-sm btn-custom btn-block text-center py-2">Đăng ký Walk-in</a>
+                                    </div>
+                                    <div th:if="${room.roomStatus == 'Đang sử dụng'}">
+                                        <button class="btn btn-sm btn-custom-dark btn-block text-center py-2 view-details-btn" th:data-branch="${room.id.branchId}" th:data-room="${room.id.roomNo}">Xem chi tiết stay</button>
+                                    </div>
+                                     <div th:if="${room.roomStatus == 'Đang dọn'}">
+                                         <form th:action="@{/receptionist/rooms/finish-cleaning}" method="post">
+                                             <input type="hidden" name="branchId" th:value="${room.id.branchId}">
+                                             <input type="hidden" name="roomNo" th:value="${room.id.roomNo}">
+                                             <button type="submit" class="btn btn-sm btn-warning btn-block text-center py-2 text-white font-weight-bold" style="border-radius: 0;">Hoàn tất dọn dẹp</button>
+                                         </form>
+                                     </div>
+                                    <div th:if="${room.roomStatus == 'Đang bảo trì'}">
+                                        <button class="btn btn-sm btn-danger btn-block text-center py-2" disabled>Đang bảo trì</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" th:if="${#maps.isEmpty(roomsGroupedByBranch)}">
+                <div class="col-12 text-center py-5 bg-white border">
+                    <p class="text-muted mb-0">Không tìm thấy phòng nào khớp với tiêu chí tìm kiếm.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{receptionist/receptionist-header :: scripts}"></div>
+
+    <script>
+        $(document).ready(function() {
+            // Filters application redirection
+            $('#filter-branch, #filter-status').change(function() {
+                applyFilters();
+            });
+
+            $('#btn-reset-filters').click(function() {
+                window.location.href = '/receptionist/rooms';
+            });
+
+            function applyFilters() {
+                let branch = $('#filter-branch').val();
+                let status = $('#filter-status').val();
+                let params = [];
+                if (branch && branch !== 'ALL') params.push('branchId=' + encodeURIComponent(branch));
+                if (status && status !== 'ALL') params.push('status=' + encodeURIComponent(status));
+                let url = '/receptionist/rooms';
+                if (params.length > 0) {
+                    url += '?' + params.join('&');
+                }
+                window.location.href = url;
+            }
+
+            // View details of stay for Occupied room
+            $('.view-details-btn').click(function() {
+                let branch = $(this).data('branch');
+                let room = $(this).data('room');
+                window.location.href = `/receptionist/rooms/stay?branchId=${branch}&roomNo=${room}`;
+            });
+        });
+    </script>
+</body>
+</html>

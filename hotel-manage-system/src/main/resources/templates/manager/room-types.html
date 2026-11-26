@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:insert="~{manager/manager-header :: head('Room Types - Manager — Harbor Lights Hotel')}"></th:block>
+
+    <style>
+        .btn-custom {
+            background: #f96d00;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom:hover {
+            background: #e06200;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(249, 109, 0, 0.3);
+        }
+
+        .btn-custom-danger {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-danger:hover {
+            background: #c82333;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn-custom-dark {
+            background: #1e1e24;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-dark:hover {
+            background: #0b0b0d;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn-custom-success {
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-custom-success:hover {
+            background: #218838;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .modal-content {
+            border-radius: 0;
+            border: none;
+        }
+
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+
+        .room-type-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+
+        .room-type-actions .btn {
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            margin-left: 4px;
+        }
+
+        .room-wrap {
+            position: relative;
+        }
+
+        .add-card {
+            border: 2px dashed #ccc;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .add-card:hover {
+            border-color: #f96d00;
+            background: rgba(249, 109, 0, 0.05);
+        }
+
+        .add-card .add-icon {
+            font-size: 3rem;
+            color: #ccc;
+            transition: all 0.3s;
+        }
+
+        .add-card:hover .add-icon {
+            color: #f96d00;
+        }
+
+        .add-card p {
+            color: #999;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{manager/manager-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/index.html">Home</a></span>
+                            <span>Manager</span></p>
+                        <h1 class="mb-4 bread">Room Types</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section ftco-no-pb ftco-room">
+        <div class="container-fluid px-0">
+            <div class="row no-gutters justify-content-center mb-5 pb-3">
+                <div class="col-md-7 heading-section text-center ftco-animate">
+                    <span class="subheading">Harbor Lights Rooms</span>
+                    <h2 class="mb-4">Manage Room Categories</h2>
+                </div>
+            </div>
+
+            <!-- ALERT AREA -->
+            <div class="container" th:if="${successMessage != null or errorMessage != null}">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert"
+                            style="border-radius:0;" th:if="${successMessage != null}">
+                            <span th:text="${successMessage}"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert"
+                            style="border-radius:0;" th:if="${errorMessage != null}">
+                            <span th:text="${errorMessage}"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEARCH BAR & TOP ADD BUTTON -->
+            <div class="row mb-4 align-items-center">
+                <div class="col-md-9 mb-2 mb-md-0">
+                    <input type="text" class="form-control py-3" id="search-room-types" placeholder="Search suite categories by name or description...">
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary btn-block py-3" style="border-radius: 30px; font-weight: 500;" id="btn-add-room-type-top">
+                        <span class="icon-plus mr-2"></span>Create Suite Category
+                    </button>
+                </div>
+            </div>
+
+            <!-- ROOM TYPE CARDS - using template room-wrap design -->
+            <div class="row no-gutters" id="room-types-list-container">
+                <!-- Dynamic room type cards -->
+                <th:block th:each="rt, iterStat : ${roomTypes}">
+                    <!-- Even index: image left, text right (left-arrow) -->
+                    <div class="col-lg-6 room-type-card" th:if="${iterStat.index % 2 == 0}">
+                        <div class="room-wrap d-md-flex ftco-animate">
+                            <div class="room-type-actions">
+                                <a th:href="@{/manager/room-types/view/{id}(id=${rt.roomTypeId})}" class="btn btn-custom-success">View</a>
+                                <button class="btn btn-custom-dark edit-btn" th:data-id="${rt.roomTypeId}"
+                                    th:data-name="${rt.typeName}" th:data-capacity="${rt.capacity}"
+                                    th:data-price="${rt.basePrice}" th:data-desc="${rt.description}"
+                                    th:data-images="${rt.images != null ? #strings.listJoin(rt.images.![imageId + '|' + imageUrl], ',') : ''}">Edit</button>
+                                <form th:action="@{/manager/room-types/delete}" method="post" style="display:inline;"
+                                    onsubmit="return confirm('Are you absolutely sure you want to permanently delete this suite category? This action cannot be undone.');">
+                                    <input type="hidden" name="roomTypeId" th:value="${rt.roomTypeId}">
+                                    <button type="submit" class="btn btn-custom-danger">Delete</button>
+                                </form>
+                            </div>
+                            <a href="#" class="img"
+                                th:style="'background-image: url(' + ${rt.images != null and !rt.images.isEmpty() ? rt.images[0].imageUrl : '/images/room-' + ((iterStat.index % 6) + 1) + '.jpg'} + ');'"></a>
+                            <div class="half left-arrow d-flex align-items-center">
+                                <div class="text p-4 text-center">
+                                    <p class="star mb-0">
+                                        <span class="ion-ios-star"></span><span class="ion-ios-star"></span><span
+                                            class="ion-ios-star"></span><span class="ion-ios-star"></span><span
+                                            class="ion-ios-star"></span>
+                                    </p>
+                                    <p class="mb-0">
+                                        <span class="price mr-1"
+                                            th:text="${#numbers.formatDecimal(rt.basePrice, 1, 'POINT', 0, 'COMMA')} + ' VND'">120.000
+                                            VND</span>
+                                        <span class="per">per night</span>
+                                    </p>
+                                    <h3 class="mb-3"><a href="#" th:text="${rt.typeName}">King Room</a></h3>
+                                    <p class="mb-1 text-muted" style="font-size: 0.85rem;">
+                                        <span class="icon-users mr-1"></span>
+                                        Capacity: <span th:text="${rt.capacity}">2</span> guests
+                                    </p>
+                                    <p class="pt-1" th:if="${rt.description != null and !rt.description.isEmpty()}">
+                                        <small class="text-muted" th:text="${rt.description}">A luxurious room with
+                                            scenic views.</small>
+                                    </p>
+                                    <!-- Image gallery -->
+                                    <div class="mt-2 d-flex justify-content-center flex-wrap"
+                                        th:if="${rt.images != null and rt.images.size() > 1}">
+                                        <th:block th:each="img : ${rt.images}">
+                                            <a th:href="${img.imageUrl}" class="image-popup" style="margin: 2px;">
+                                                <img th:src="${img.imageUrl}"
+                                                    style="width: 45px; height: 45px; object-fit: cover; border: 1px solid #ddd; border-radius: 2px;"
+                                                    alt="Demo image">
+                                            </a>
+                                        </th:block>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Odd index: text left, image right (right-arrow) -->
+                    <div class="col-lg-6 room-type-card" th:if="${iterStat.index % 2 != 0}">
+                        <div class="room-wrap d-md-flex ftco-animate">
+                            <div class="room-type-actions">
+                                <a th:href="@{/manager/room-types/view/{id}(id=${rt.roomTypeId})}" class="btn btn-custom-success">View</a>
+                                <button class="btn btn-custom-dark edit-btn" th:data-id="${rt.roomTypeId}"
+                                    th:data-name="${rt.typeName}" th:data-capacity="${rt.capacity}"
+                                    th:data-price="${rt.basePrice}" th:data-desc="${rt.description}"
+                                    th:data-images="${rt.images != null ? #strings.listJoin(rt.images.![imageId + '|' + imageUrl], ',') : ''}">Edit</button>
+                                <form th:action="@{/manager/room-types/delete}" method="post" style="display:inline;"
+                                    onsubmit="return confirm('Are you absolutely sure you want to permanently delete this suite category? This action cannot be undone.');">
+                                    <input type="hidden" name="roomTypeId" th:value="${rt.roomTypeId}">
+                                    <button type="submit" class="btn btn-custom-danger">Delete</button>
+                                </form>
+                            </div>
+                            <a href="#" class="img order-md-last"
+                                th:style="'background-image: url(' + ${rt.images != null and !rt.images.isEmpty() ? rt.images[0].imageUrl : '/images/room-' + ((iterStat.index % 6) + 1) + '.jpg'} + ');'"></a>
+                            <div class="half right-arrow d-flex align-items-center">
+                                <div class="text p-4 text-center">
+                                    <p class="star mb-0">
+                                        <span class="ion-ios-star"></span><span class="ion-ios-star"></span><span
+                                            class="ion-ios-star"></span><span class="ion-ios-star"></span><span
+                                            class="ion-ios-star"></span>
+                                    </p>
+                                    <p class="mb-0">
+                                        <span class="price mr-1"
+                                            th:text="${#numbers.formatDecimal(rt.basePrice, 1, 'POINT', 0, 'COMMA')} + ' VND'">120.000
+                                            VND</span>
+                                        <span class="per">per night</span>
+                                    </p>
+                                    <h3 class="mb-3"><a href="#" th:text="${rt.typeName}">Suite Room</a></h3>
+                                    <p class="mb-1 text-muted" style="font-size: 0.85rem;">
+                                        <span class="icon-users mr-1"></span>
+                                        Capacity: <span th:text="${rt.capacity}">2</span> guests
+                                    </p>
+                                    <p class="pt-1" th:if="${rt.description != null and !rt.description.isEmpty()}">
+                                        <small class="text-muted" th:text="${rt.description}">A comfortable suite for
+                                            families.</small>
+                                    </p>
+                                    <!-- Image gallery -->
+                                    <div class="mt-2 d-flex justify-content-center flex-wrap"
+                                        th:if="${rt.images != null and rt.images.size() > 1}">
+                                        <th:block th:each="img : ${rt.images}">
+                                            <a th:href="${img.imageUrl}" class="image-popup" style="margin: 2px;">
+                                                <img th:src="${img.imageUrl}"
+                                                    style="width: 45px; height: 45px; object-fit: cover; border: 1px solid #ddd; border-radius: 2px;"
+                                                    alt="Demo image">
+                                            </a>
+                                        </th:block>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+
+                <!-- ADD NEW CARD -->
+                <div class="col-lg-6">
+                    <div class="add-card ftco-animate" id="btn-add-room-type">
+                        <div class="text-center">
+                            <div class="add-icon"><span class="icon-plus"></span></div>
+                            <p>Create Suite Category</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div class="col-12 text-center py-5" th:if="${#lists.isEmpty(roomTypes)}">
+                    <h3 class="text-muted">No items found</h3>
+                    <p class="text-muted">It seems no categories or entries have been configured yet. Start by creating a new registration.</p>
+                </div>
+            </div>
+            
+            <!-- Pagination Container -->
+            <div class="row mt-4">
+                <div class="col-12" id="pagination-container"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="ftco-footer ftco-section img" style="background-image: url('/images/bg_4.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Harbor Lights</h2>
+                        <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia,
+                            there live the blind texts.</p>
+                        <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+                            <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4 ml-md-5">
+                        <h2 class="ftco-heading-2">Useful Links</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Blog</a></li>
+                            <li><a href="#" class="py-2 d-block">Rooms</a></li>
+                            <li><a href="#" class="py-2 d-block">Amenities</a></li>
+                            <li><a href="#" class="py-2 d-block">Gift Card</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Privacy</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Career</a></li>
+                            <li><a href="#" class="py-2 d-block">About Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Contact Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Services</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Have a Questions?</h2>
+                        <div class="block-23 mb-3">
+                            <ul>
+                                <li><span class="icon icon-map-marker"></span><span class="text">203 Fake St. Mountain
+                                        View, San Francisco, California, USA</span></li>
+                                <li><a href="#"><span class="icon icon-phone"></span><span class="text">+2 392 3929
+                                            210</span></a></li>
+                                <li><a href="#"><span class="icon icon-envelope"></span><span
+                                            class="text">info@yourdomain.com</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>Copyright &copy;
+                        <script>document.write(new Date().getFullYear());</script> All rights reserved | This template
+                        is made with <i class="icon-heart color-danger" aria-hidden="true"></i> by <a
+                            href="https://colorlib.com" target="_blank">Colorlib</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ROOM TYPE FORM MODAL -->
+    <div class="modal fade" id="roomTypeModal" tabindex="-1" role="dialog" aria-labelledby="rtModalTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title font-weight-bold" id="rtModalTitle">Create Suite Category</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <form id="room-type-form" th:action="@{/manager/room-types/save}" method="post" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" id="roomTypeId" name="roomTypeId">
+
+                        <div class="form-group">
+                            <label for="typeName" class="font-weight-bold text-dark">Type Name</label>
+                            <input type="text" class="form-control" name="typeName" id="typeName"
+                                placeholder="e.g. King Room" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="capacity" class="font-weight-bold text-dark">Capacity (guests)</label>
+                            <input type="number" class="form-control" name="capacity" id="capacity" min="1"
+                                placeholder="e.g. 2" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="basePrice" class="font-weight-bold text-dark">Base Price (VND / night)</label>
+                            <input type="number" class="form-control" name="basePrice" id="basePrice" min="0"
+                                step="1000" placeholder="e.g. 500000" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description" class="font-weight-bold text-dark">Description</label>
+                            <textarea class="form-control" name="description" id="description" rows="3"
+                                placeholder="Brief description..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold text-dark d-block">Existing Images</label>
+                            <div id="existing-images-container" class="d-flex flex-wrap mb-2">
+                                <!-- Javascript will populate thumbnails of existing images here -->
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="imageFiles" class="font-weight-bold text-dark d-block">Upload New Images</label>
+                            <div class="custom-file-upload">
+                                <input type="file" class="form-control-file" name="imageFiles" id="imageFiles" accept="image/*" multiple style="display: none;">
+                                <div id="upload-dropzone" style="border: 2px dashed #f96d00; padding: 25px; text-align: center; cursor: pointer; transition: all 0.3s;">
+                                    <span class="icon-camera" style="font-size: 24px; color: #f96d00;"></span>
+                                    <p class="mb-0 mt-2" style="font-weight: bold; color: #f96d00;">Drag & Drop or Click to Upload</p>
+                                    <small class="text-muted">You can select multiple files</small>
+                                </div>
+                                <div id="new-images-preview" class="d-flex flex-wrap mt-2">
+                                     <!-- Preview of newly selected files -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-right mt-4">
+                            <button type="button" class="btn btn-secondary px-4 py-2" data-dismiss="modal"
+                                style="border-radius: 0;">Cancel</button>
+                            <button type="submit" class="btn btn-custom px-4 py-2">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px">
+            <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee" />
+            <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+                stroke="#F96D00" />
+        </svg></div>
+
+    <div th:replace="~{manager/manager-header :: scripts}"></div>
+    <script src="/js/search-pagination.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Existing images list builder
+            function addExistingImage(id, url) {
+
+                var thumb = $(
+                    '<div class="existing-image-thumb position-relative m-1" style="width: 75px; height: 75px;">' +
+                    '   <img src="' + url + '" style="width: 70px; height: 70px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px;">' +
+                    '   <button type="button" class="btn btn-danger btn-remove-existing-image position-absolute" style="top: -5px; right: -5px; width: 20px; height: 20px; border-radius: 50%; padding: 0; line-height: 18px; font-size: 12px; font-weight: bold; background: #dc3545; border: none; color: white; cursor: pointer;">&times;</button>' +
+                    '   <input type="hidden" name="keepImageIds" value="' + id + '">' +
+                    '</div>'
+                );
+                $('#existing-images-container').append(thumb);
+            }
+
+            $(document).on('click', '.btn-remove-existing-image', function () {
+                $(this).closest('.existing-image-thumb').remove();
+            });
+
+            // Trigger file dialog on click dropzone
+            $('#upload-dropzone').click(function () {
+                $('#imageFiles').click();
+            });
+
+            var newFilesToUpload = [];
+
+            function renderNewPreviews() {
+                var previewContainer = $('#new-images-preview');
+                previewContainer.empty();
+                for (var i = 0; i < newFilesToUpload.length; i++) {
+                    (function (file, index) {
+                        if (file.type.match('image.*')) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) {
+                                var preview = $(
+                                    '<div class="new-image-preview position-relative m-1" style="width: 75px; height: 75px;" data-index="' + index + '">' +
+                                    '   <img src="' + e.target.result + '" style="width: 70px; height: 70px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px;">' +
+                                    '   <button type="button" class="btn btn-danger btn-remove-new-image position-absolute" style="top: -5px; right: -5px; width: 20px; height: 20px; border-radius: 50%; padding: 0; line-height: 18px; font-size: 12px; font-weight: bold; background: #dc3545; border: none; color: white; cursor: pointer;">&times;</button>' +
+                                    '</div>'
+                                );
+                                previewContainer.append(preview);
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    })(newFilesToUpload[i], i);
+                }
+            }
+
+            function updateFileInput() {
+                var dt = new DataTransfer();
+                for (var i = 0; i < newFilesToUpload.length; i++) {
+                    dt.items.add(newFilesToUpload[i]);
+                }
+                document.getElementById('imageFiles').files = dt.files;
+            }
+
+            // File select/preview handler
+            $('#imageFiles').change(function () {
+                var files = this.files;
+                if (files) {
+                    for (var i = 0; i < files.length; i++) {
+                        newFilesToUpload.push(files[i]);
+                    }
+                    renderNewPreviews();
+                    updateFileInput();
+                }
+            });
+
+            // Remove new image handler
+            $(document).on('click', '.btn-remove-new-image', function () {
+                var index = $(this).closest('.new-image-preview').data('index');
+                newFilesToUpload.splice(index, 1);
+                renderNewPreviews();
+                updateFileInput();
+            });
+
+            // Drag and drop event handlers
+            var dropzone = document.getElementById('upload-dropzone');
+            if (dropzone) {
+                dropzone.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).css('background-color', 'rgba(249, 109, 0, 0.1)');
+                });
+
+                dropzone.addEventListener('dragleave', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).css('background-color', 'transparent');
+                });
+
+                dropzone.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).css('background-color', 'transparent');
+                    
+                    var dt = e.dataTransfer;
+                    var files = dt.files;
+                    if (files) {
+                        for (var i = 0; i < files.length; i++) {
+                            newFilesToUpload.push(files[i]);
+                        }
+                        renderNewPreviews();
+                        updateFileInput();
+                    }
+                });
+            }
+
+            // Edit room type
+            $('.edit-btn').click(function () {
+                $('#rtModalTitle').text('Edit Suite Category');
+                $('#roomTypeId').val($(this).data('id'));
+                $('#typeName').val($(this).data('name'));
+                $('#capacity').val($(this).data('capacity'));
+                $('#basePrice').val($(this).data('price'));
+                $('#description').val($(this).data('desc'));
+
+                $('#existing-images-container').empty();
+                $('#new-images-preview').empty();
+                newFilesToUpload = []; // Reset accumulated files
+                $('#imageFiles').val(''); // Reset file input
+                
+                var images = $(this).data('images') || '';
+                if (images) {
+                    var items = images.split(',');
+                    for (var i = 0; i < items.length; i++) {
+                        if (items[i].trim()) {
+                            var parts = items[i].split('|');
+                            if (parts.length === 2) {
+                                addExistingImage(parts[0], parts[1]);
+                            }
+                        }
+                    }
+                }
+
+                $('#roomTypeModal').modal('show');
+            });
+
+            // Open Modal for Add
+            $('#btn-add-room-type, #btn-add-room-type-top').click(function () {
+                $('#rtModalTitle').text('Create Suite Category');
+                $('#room-type-form')[0].reset();
+                $('#roomTypeId').val('');
+                $('#existing-images-container').empty();
+                $('#new-images-preview').empty();
+                newFilesToUpload = []; // Reset accumulated files
+                $('#imageFiles').val(''); // Reset file input
+                $('#roomTypeModal').modal('show');
+            });
+
+            // Validation handler
+            $('#room-type-form').submit(function (e) {
+                var name = $('#typeName').val().trim();
+                var cap = parseInt($('#capacity').val());
+                var price = parseFloat($('#basePrice').val());
+
+                if (!name) { alert('Please enter type name.'); e.preventDefault(); return false; }
+                if (isNaN(cap) || cap <= 0) { alert('Capacity must be at least 1.'); e.preventDefault(); return false; }
+                if (isNaN(price) || price < 0) { alert('Price cannot be negative.'); e.preventDefault(); return false; }
+            });
+
+            // Initialize Search & Pagination
+            initSearchPagination({
+                searchInputId: '#search-room-types',
+                itemContainerSelector: '#room-types-list-container',
+                itemSelector: '.room-type-card',
+                paginationContainerId: '#pagination-container',
+                pageSize: 4,
+                searchFields: ['h3 a', 'small.text-muted']
+            });
+        });
+    </script>
+</body>
+
+</html>

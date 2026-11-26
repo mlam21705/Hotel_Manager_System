@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{Customer/customer-header :: head('Chi tiết đặt phòng | Harbor Lights')}"></head>
+<body>
+<nav th:replace="~{Customer/customer-header :: nav('reservations')}"></nav>
+<section class="hero-wrap hero-wrap-2 customer-hero" style="background-image: url('/images/bg_1.jpg');">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row no-gutters slider-text align-items-center justify-content-center">
+            <div class="col-md-9 ftco-animate text-center"><p class="breadcrumbs"><span><a href="/customer/home">Trang chủ</a></span>
+            </p>
+                <h1 class="mb-0 bread">Chi tiết đặt phòng</h1>
+                <p class="hero-subtitle">Thông tin đầy đủ về phòng, dịch vụ và thanh toán.</p></div>
+        </div>
+    </div>
+</section>
+<section class="ftco-section bg-light">
+    <div class="container">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="customer-panel mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div><span class="subheading">Mã đặt phòng</span>
+                            <h2 th:text="${'#' + reservation.reservationId}">#1</h2></div>
+                        <span class="status-badge status-large"
+                              th:classappend="${#strings.toLowerCase(reservation.reservationStatus)}"
+                              th:text="${reservation.reservationStatus}">Pending</span></div>
+                    <div class="reservation-room" th:each="d : ${reservation.reserveDetails}">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="reservation-image" style="background-image:url('/images/room-3.jpg')"></div>
+                            </div>
+                            <div class="col-md-7"><h3
+                                    th:text="${d.room.roomType.typeName + ' - Phòng ' + d.room.id.roomNo}">Deluxe</h3>
+                                <ul class="detail-list">
+                                    <li><span>Chi nhánh</span><strong th:text="${d.room.id.branchId}">1</strong></li>
+                                    <li><span>Ngày nhận phòng</span><strong
+                                            th:text="${d.checkInDate}">01/01/2026</strong></li>
+                                    <li><span>Ngày trả phòng</span><strong
+                                            th:text="${d.checkOutDate}">02/01/2026</strong></li>
+                                    <li><span>Số khách</span><strong th:text="${d.numberOfGuest}">2</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-4"><h4>Dịch vụ đã chọn</h4>
+                            <div th:if="${d.useServices != null and !#lists.isEmpty(d.useServices)}">
+                                <div class="service-line" th:each="u : ${d.useServices}"><span
+                                        th:text="${u.service.serviceName}">Breakfast</span><strong
+                                        th:text="${#numbers.formatDecimal(u.priceAtTime,0,'COMMA',0,'POINT') + ' ₫'}">0
+                                    ₫</strong></div>
+                            </div>
+                            <p th:if="${d.useServices == null or #lists.isEmpty(d.useServices)}" class="text-muted">
+                                Không có dịch vụ bổ sung.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="customer-panel booking-total"><span class="subheading">Thanh toán</span>
+                    <h3>Tổng đơn</h3>
+                    <div class="total-amount"
+                         th:text="${#numbers.formatDecimal(reservation.totalAmount,0,'COMMA',0,'POINT') + ' ₫'}">0 ₫
+                    </div>
+                    <p class="text-muted">Trạng thái và tổng tiền được cập nhật theo dữ liệu hệ thống.</p>
+                    <form th:if="${#strings.equalsIgnoreCase(reservation.reservationStatus,'Pending') or #strings.equalsIgnoreCase(reservation.reservationStatus,'Confirmed')}"
+                          th:action="@{/customer/reservations/{id}/cancel(id=${reservation.reservationId})}"
+                          method="post" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn đặt phòng này?')">
+                        <button type="submit" class="btn btn-outline-danger btn-block">Hủy đặt phòng</button>
+                    </form>
+                    <a th:href="@{/customer/reservations}" class="btn btn-link btn-block">Quay lại danh sách</a></div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="ftco-loader" class="show fullscreen">
+    <svg class="circular" width="48px" height="48px">
+        <circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/>
+        <circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10"
+                stroke="#F96D00"/>
+    </svg>
+</div>
+<div th:replace="~{Customer/customer-header :: scripts}"></div>
+</body>
+</html>

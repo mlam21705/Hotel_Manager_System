@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="nav(activePage)" class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light customer-navbar" id="ftco-navbar">
+  <div class="container">
+    <a class="navbar-brand" th:href="@{/customer/home}">Harbor<span>lights</span></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#customer-nav" aria-controls="customer-nav" aria-expanded="false" aria-label="Mở menu"><span class="oi oi-menu"></span> Menu</button>
+    <div class="collapse navbar-collapse" id="customer-nav">
+      <ul class="navbar-nav ml-auto align-items-lg-center">
+        <li class="nav-item" th:classappend="${activePage == 'home'} ? 'active'"><a th:href="@{/customer/home}" class="nav-link">Trang chủ</a></li>
+        <li class="nav-item" th:classappend="${activePage == 'rooms'} ? 'active'"><a th:href="@{/customer/rooms}" class="nav-link">Tìm phòng</a></li>
+        <li class="nav-item" th:classappend="${activePage == 'reservations'} ? 'active'"><a th:href="@{/customer/reservations}" class="nav-link">Đặt phòng của tôi</a></li>
+        <li class="nav-item" th:classappend="${activePage == 'profile'} ? 'active'"><a th:href="@{/customer/profile}" class="nav-link">Hồ sơ</a></li>
+        <li class="nav-item ml-lg-2">
+          <form th:action="@{/logout}" method="post" class="m-0">
+            <button type="submit" class="btn btn-primary customer-logout">Đăng xuất</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+</body></html>

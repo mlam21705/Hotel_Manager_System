@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{receptionist/receptionist-header :: head('Chi tiết đặt phòng Lễ tân — Khách sạn Harbor Lights')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-danger { background: #dc3545; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-danger:hover { background: #c82333; color: #fff; transform: translateY(-2px); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        
+        .detail-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            margin-bottom: 35px;
+        }
+
+        .table {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .table thead th {
+            border-bottom: 2px solid #f96d00;
+            color: #222;
+            font-weight: 700;
+        }
+        
+        .badge-status {
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge-status-pending { background-color: #fca311 !important; }
+        .badge-status-confirmed { background-color: #007bff !important; }
+        .badge-status-checkedin { background-color: #28a745 !important; }
+        .badge-status-checkedout { background-color: #6c757d !important; }
+        .badge-status-cancelled { background-color: #dc3545 !important; }
+        
+        .badge-room-empty { background-color: #28a745 !important; color: #fff; padding: 3px 8px; font-size: 0.7rem; }
+        .badge-room-occupied { background-color: #007bff !important; color: #fff; padding: 3px 8px; font-size: 0.7rem; }
+        .badge-room-cleaning { background-color: #fca311 !important; color: #fff; padding: 3px 8px; font-size: 0.7rem; }
+        .badge-room-maintenance { background-color: #6c757d !important; color: #fff; padding: 3px 8px; font-size: 0.7rem; }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{receptionist/receptionist-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/receptionist/home">Trang chủ</a></span> <span><a href="/receptionist/reservations">Đặt phòng</a></span> <span>Chi tiết stay</span></p>
+                        <h1 class="mb-4 bread" th:text="${'Chi Tiết Đơn Đặt Phòng #' + reserve.reservationId}">Chi Tiết Đơn Đặt Phòng</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            
+            <!-- ALERTS -->
+            <div class="row mb-4" th:if="${successMessage != null or errorMessage != null}">
+                <div class="col-12">
+                    <div th:if="${successMessage != null}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${successMessage}">Success message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div th:if="${errorMessage != null}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${errorMessage}">Error message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BACK TO LIST BUTTON -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <a href="/receptionist/reservations" class="btn btn-custom-dark px-4 py-2 font-weight-bold">&larr; Quay lại danh sách</a>
+                </div>
+            </div>
+
+            <!-- GUEST & BOOKING SUMMARY -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h4 class="font-weight-bold text-dark border-bottom pb-2 mb-3">Thông Tin Khách Hàng</h4>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-dark">Họ và tên:</div>
+                            <div class="col-7" th:text="${reserve.guest.guestName}">John Doe</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-dark">Số CCCD / ID:</div>
+                            <div class="col-7" th:text="${reserve.guest.cccd}">001090123456</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-dark">Số điện thoại:</div>
+                            <div class="col-7" th:text="${reserve.guest.phoneNumber}">0901234567</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-dark">Địa chỉ:</div>
+                            <div class="col-7" th:text="${reserve.guest.address}">123 ABC Street, Hanoi</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <h4 class="font-weight-bold text-dark border-bottom pb-2 mb-3">Tổng Quan Đơn Đặt Phòng</h4>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-dark">Mã đặt phòng:</div>
+                            <div class="col-7 font-weight-bold" th:text="${'#' + reserve.reservationId}">#1</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-dark">Ngày đặt đơn:</div>
+                            <div class="col-7" th:text="${#temporals.format(reserve.reserveDate, 'dd/MM/yyyy HH:mm')}">12/06/2026</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-dark">Trạng thái đơn:</div>
+                            <div class="col-7">
+                                <span class="badge-status" th:classappend="${reserve.reservationStatus == 'Pending' ? 'badge-status-pending' : (reserve.reservationStatus == 'Confirmed' ? 'badge-status-confirmed' : (reserve.reservationStatus == 'Checked-In' ? 'badge-status-checkedin' : (reserve.reservationStatus == 'Checked-Out' ? 'badge-status-checkedout' : 'badge-status-cancelled')))}" th:text="${reserve.reservationStatus == 'Pending' ? 'Chờ xác nhận' : (reserve.reservationStatus == 'Confirmed' ? 'Đã xác nhận' : (reserve.reservationStatus == 'Checked-In' ? 'Đang lưu trú' : (reserve.reservationStatus == 'Checked-Out' ? 'Đã trả phòng' : 'Đã huỷ')))}">Chờ xác nhận</span>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 font-weight-bold text-dark">Tổng số tiền cọc/đơn:</div>
+                            <div class="col-7 font-weight-bold text-primary" th:text="${#numbers.formatDecimal(reserve.totalAmount, 1, 'POINT', 0, 'COMMA') + ' VND'}">1,000,000 VND</div>
+                        </div>
+                        <div class="row mb-2" th:if="${reserve.reservationStatus == 'Pending'}">
+                            <div class="col-12 mt-2">
+                                <button class="btn btn-block btn-custom py-2 confirm-btn" th:data-id="${reserve.reservationId}">Xác nhận đặt cọc & Duyệt đơn</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROOM DETAILS AND SERVICES -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="detail-card">
+                        <h4 class="font-weight-bold text-dark border-bottom pb-2 mb-3">Chi Tiết Phòng Đặt và Dịch Vụ Sử Dụng</h4>
+                        
+                        <div th:each="detail : ${reserve.reserveDetails}" class="border p-4 mb-4" style="background-color: #fafafa;">
+                            <div class="row justify-content-between align-items-center mb-3">
+                                <div class="col-md-8">
+                                    <h5 class="font-weight-bold text-dark mb-0">
+                                        <span th:text="${'Chi nhánh ' + detail.room.id.branchId + ' - Phòng ' + detail.room.id.roomNo}">Branch 1 - Room 101</span>
+                                        <small class="text-muted ml-2" th:text="${'(' + detail.room.roomType.typeName + ')'}">(Double Category)</small>
+                                    </h5>
+                                </div>
+                                <div class="col-md-4 text-md-right mt-2 mt-md-0">
+                                    <span class="badge" th:classappend="${detail.room.roomStatus == 'Trống' ? 'badge-room-empty' : (detail.room.roomStatus == 'Đang sử dụng' ? 'badge-room-occupied' : (detail.room.roomStatus == 'Đang dọn' ? 'badge-room-cleaning' : 'badge-room-maintenance'))}" th:text="${'Trạng thái phòng: ' + detail.room.roomStatus}">Trống</span>
+                                </div>
+                            </div>
+
+                            <hr class="mt-0 mb-3">
+
+                            <div class="row mb-4">
+                                <div class="col-md-3 col-sm-6">
+                                    <span class="text-muted d-block">Ngày nhận phòng:</span>
+                                    <strong class="text-dark" th:text="${#temporals.format(detail.checkInDate, 'dd/MM/yyyy')}">12/06/2026</strong>
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <span class="text-muted d-block">Ngày trả phòng:</span>
+                                    <strong class="text-dark" th:text="${#temporals.format(detail.checkOutDate, 'dd/MM/yyyy')}">14/06/2026</strong>
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <span class="text-muted d-block">Số lượng khách:</span>
+                                    <strong class="text-dark" th:text="${detail.numberOfGuest + ' người'}">2 người</strong>
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <span class="text-muted d-block">Đơn giá phòng tại quầy:</span>
+                                    <strong class="text-primary" th:text="${#numbers.formatDecimal(detail.price, 1, 'POINT', 0, 'COMMA') + ' VND/đêm'}">1,000,000 VND</strong>
+                                </div>
+                            </div>
+
+                            <!-- Context actions for room detail -->
+                            <div class="row mb-4">
+                                <div class="col-12 text-right">
+                                    <!-- CONFIRMED booking is ready for Check-In -->
+                                    <div th:if="${reserve.reservationStatus == 'Confirmed'}">
+                                        <form th:action="@{/receptionist/checkin}" method="post" class="d-inline">
+                                            <input type="hidden" name="reservationId" th:value="${reserve.reservationId}">
+                                            <input type="hidden" name="reserveDetailId" th:value="${detail.reserveDetailId}">
+                                            
+                                            <button type="submit" class="btn btn-custom px-4 py-2" th:disabled="${detail.room.roomStatus != 'Trống'}">
+                                                Thực hiện Check-In nhận phòng
+                                            </button>
+                                        </form>
+                                        <p class="text-muted small mt-2" th:if="${detail.room.roomStatus != 'Trống'}">Phòng được gán hiện tại không Trống (đang bận/dọn dẹp). Vui lòng dọn dẹp hoặc chọn phòng khác.</p>
+                                    </div>
+
+                                    <!-- CHECKED-IN stay is active, can add services or check-out -->
+                                    <div th:if="${reserve.reservationStatus == 'Checked-In'}">
+                                        <button class="btn btn-custom px-4 py-2 add-service-btn" th:data-id="${detail.reserveDetailId}">
+                                            + Thêm dịch vụ sử dụng
+                                        </button>
+                                        <button class="btn btn-info px-4 py-2 extend-room-btn ml-1" 
+                                                th:data-id="${detail.reserveDetailId}" 
+                                                th:data-checkout="${#temporals.format(detail.checkOutDate, 'yyyy-MM-dd')}">
+                                            Gia hạn phòng
+                                        </button>
+                                        <a th:href="@{/receptionist/checkout/{id}(id=${detail.reserveDetailId})}" class="btn btn-custom-danger px-4 py-2 ml-1">
+                                            Thanh toán & Trả phòng (Check-Out)
+                                        </a>
+                                    </div>
+
+                                    <!-- CHECKED-OUT stay is completed -->
+                                    <div th:if="${reserve.reservationStatus == 'Checked-Out'}">
+                                        <a th:href="@{/receptionist/invoice/{id}(id=${reserve.invoice.invoiceId})}" class="btn btn-custom px-4 py-2">
+                                            Xem hoá đơn thanh toán
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- List of consumed services for this room detail -->
+                            <div th:if="${reserve.reservationStatus == 'Checked-In' or reserve.reservationStatus == 'Checked-Out'}">
+                                <h6 class="font-weight-bold text-dark mb-2">Các dịch vụ đã sử dụng trong kỳ nghỉ:</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Dịch vụ</th>
+                                                <th>Đơn giá tại thời điểm dùng</th>
+                                                <th>Số lượng</th>
+                                                <th>Thời gian sử dụng</th>
+                                                <th class="text-right">Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:if="${#lists.isEmpty(detail.useServices)}">
+                                                <td colspan="5" class="text-center py-2 text-muted">Chưa ghi nhận dịch vụ phát sinh nào.</td>
+                                            </tr>
+                                            <tr th:each="us : ${detail.useServices}">
+                                                <td th:text="${us.service.serviceName}">Drink</td>
+                                                <td th:text="${#numbers.formatDecimal(us.priceAtTime, 1, 'POINT', 0, 'COMMA') + ' VND'}">50,000 VND</td>
+                                                <td th:text="${us.quantity}">1</td>
+                                                <td th:text="${#temporals.format(us.useDate, 'dd/MM/yyyy HH:mm')}">12/06/2026 18:00</td>
+                                                <td class="text-right font-weight-bold" th:text="${#numbers.formatDecimal(us.priceAtTime * us.quantity, 1, 'POINT', 0, 'COMMA') + ' VND'}">50,000 VND</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CONFIRM MODAL -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0 pl-0 pr-0">
+                    <h5 class="modal-title font-weight-bold text-dark">Xác Nhận Đặt Phòng</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body pl-0 pr-0">
+                    <form th:action="@{/receptionist/reservations/confirm}" method="post">
+                        <input type="hidden" id="confirmReservationId" name="reservationId">
+                        
+                        <p class="text-muted">Bạn có chắc chắn muốn xác nhận đơn đặt phòng này? Quy trình xác nhận yêu cầu khách hàng phải đã thanh toán tiền đặt cọc.</p>
+                        
+                        <div class="form-group form-check pl-4">
+                            <input type="checkbox" class="form-check-input" id="depositConfirmed" name="depositConfirmed" required>
+                            <label class="form-check-label text-dark font-weight-bold" for="depositConfirmed">Tôi xác nhận khách hàng đã hoàn tất đặt cọc tiền phòng.</label>
+                        </div>
+                        
+                        <div class="text-right mt-4">
+                            <button type="button" class="btn btn-secondary px-4 py-2" data-dismiss="modal" style="border-radius: 0;">Huỷ bỏ</button>
+                            <button type="submit" class="btn btn-custom px-4 py-2">Xác nhận</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD SERVICE MODAL -->
+    <div class="modal fade" id="addServiceModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0 pl-0 pr-0">
+                    <h5 class="modal-title font-weight-bold text-dark">Ghi Nhận Sử Dụng Dịch Vụ</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body pl-0 pr-0">
+                    <form th:action="@{/receptionist/reservations/__${reserve.reservationId}__/services/add}" method="post">
+                        <input type="hidden" name="reservationId" th:value="${reserve.reservationId}">
+                        <input type="hidden" id="serviceDetailId" name="reserveDetailId">
+                        
+                        <div class="form-group">
+                            <label for="serviceId" class="font-weight-bold text-dark">Chọn dịch vụ</label>
+                            <select class="form-control" name="serviceId" id="serviceId" required>
+                                <option value="">Select service...</option>
+                                <option th:each="srv : ${services}" th:value="${srv.serviceId}" th:text="${srv.serviceName + ' (' + #numbers.formatDecimal(srv.servicePrice, 1, 'POINT', 0, 'COMMA') + ' VND)'}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="quantity" class="font-weight-bold text-dark">Số lượng</label>
+                            <input type="number" class="form-control" name="quantity" id="quantity" value="1" min="1" required>
+                        </div>
+                        
+                        <div class="text-right mt-4">
+                            <button type="button" class="btn btn-secondary px-4 py-2" data-dismiss="modal" style="border-radius: 0;">Huỷ bỏ</button>
+                            <button type="submit" class="btn btn-custom px-4 py-2">Thêm dịch vụ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extend Room Modal -->
+    <div class="modal fade" id="extendRoomModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0 pl-0 pr-0">
+                    <h5 class="modal-title font-weight-bold text-dark">Gia Hạn Phòng</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body pl-0 pr-0">
+                    <form th:action="@{/receptionist/reservations/__${reserve.reservationId}__/extend}" method="post">
+                        <input type="hidden" name="reservationId" th:value="${reserve.reservationId}">
+                        <input type="hidden" id="extendReserveDetailId" name="reserveDetailId">
+                        
+                        <div class="form-group">
+                            <label for="newCheckOutDate" class="font-weight-bold text-dark">Ngày trả phòng mới</label>
+                            <input type="date" class="form-control" name="newCheckOutDate" id="newCheckOutDate" required>
+                            <small class="text-muted mt-2 d-block">Ngày trả phòng mới phải sau ngày trả phòng hiện tại. Hệ thống sẽ kiểm tra phòng trống trước khi gia hạn.</small>
+                        </div>
+                        
+                        <div class="text-right mt-4">
+                            <button type="button" class="btn btn-secondary px-4 py-2" data-dismiss="modal" style="border-radius: 0;">Huỷ bỏ</button>
+                            <button type="submit" class="btn btn-custom px-4 py-2">Xác nhận gia hạn</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{receptionist/receptionist-header :: scripts}"></div>
+
+    <script>
+        $(document).ready(function() {
+            // Open confirm modal
+            $('.confirm-btn').click(function() {
+                let id = $(this).data('id');
+                $('#confirmReservationId').val(id);
+                $('#depositConfirmed').prop('checked', false);
+                $('#confirmModal').modal('show');
+            });
+
+            // Open add service modal
+            $('.add-service-btn').click(function() {
+                let detailId = $(this).data('id');
+                $('#serviceDetailId').val(detailId);
+                $('#serviceId').val('');
+                $('#quantity').val('1');
+                $('#addServiceModal').modal('show');
+            });
+
+            // Open extend room modal
+            $('.extend-room-btn').click(function() {
+                let detailId = $(this).data('id');
+                let currentCheckout = $(this).data('checkout');
+                $('#extendReserveDetailId').val(detailId);
+                
+                // Calculate next day as min attribute
+                let date = new Date(currentCheckout);
+                date.setDate(date.getDate() + 1);
+                let nextDay = date.toISOString().split('T')[0];
+                
+                $('#newCheckOutDate').val('');
+                $('#newCheckOutDate').attr('min', nextDay);
+                $('#extendRoomModal').modal('show');
+            });
+        });
+    </script>
+</body>
+</html>

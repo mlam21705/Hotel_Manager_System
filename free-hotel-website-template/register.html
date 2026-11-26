@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Register — Harbor Lights Hotel & Resort</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Create your Harbor Lights Hotel account to book rooms, save preferences, and enjoy exclusive member benefits.">
+
+	<link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/auth.css">
+	<link rel="stylesheet" href="css/luxury-brand.css">
+</head>
+
+<body>
+
+	<!-- Back to home -->
+	<a href="index.html" class="auth-back-home" id="back-home-link">
+		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+		</svg>
+		Back to Home
+	</a>
+
+	<!-- Floating particles -->
+	<div class="auth-hero" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(47, 137, 252, 0.2) 100%), url('images/bg_2.jpg') center/cover no-repeat fixed;">
+		<div class="auth-particles">
+			<div class="auth-particle"></div>
+			<div class="auth-particle"></div>
+			<div class="auth-particle"></div>
+			<div class="auth-particle"></div>
+			<div class="auth-particle"></div>
+			<div class="auth-particle"></div>
+			<div class="auth-particle"></div>
+			<div class="auth-particle"></div>
+		</div>
+
+		<div class="auth-card">
+			<!-- Brand -->
+			<div class="auth-brand">
+				<a href="index.html">Harbor<span>lights</span></a>
+				<span class="auth-subtitle">Hotel & Resort</span>
+			</div>
+
+			<!-- Title -->
+			<h1 class="auth-title">Create Account</h1>
+			<p class="auth-desc">Join us for a premium hotel experience with exclusive member benefits</p>
+
+			<!-- Alert placeholder -->
+			<div id="register-alert">
+				<div class="auth-alert auth-alert-error" th:if="${errorMessage}">
+					<span class="alert-icon">⚠</span>
+					<span th:text="${errorMessage}">Error message</span>
+				</div>
+			</div>
+
+			<!-- Register Form -->
+			<form id="register-form" th:action="@{/register}" action="/register" method="POST" novalidate>
+				<!-- Full Name -->
+				<div class="auth-form-group">
+					<label for="register-fullname">Full Name</label>
+					<input type="text" id="register-fullname" name="fullname" th:value="${fullname}" placeholder="Enter your full name" autocomplete="name" required>
+					<span class="input-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z"/></svg>
+					</span>
+				</div>
+
+				<!-- Username -->
+				<div class="auth-form-group">
+					<label for="register-username">Username</label>
+					<input type="text" id="register-username" name="username" th:value="${username}" placeholder="Choose a username" autocomplete="username" required>
+					<span class="input-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+					</span>
+				</div>
+
+				<!-- Email -->
+				<div class="auth-form-group">
+					<label for="register-email">Email Address</label>
+					<input type="email" id="register-email" name="email" th:value="${email}" placeholder="Enter your email" autocomplete="email" required>
+					<span class="input-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+					</span>
+				</div>
+
+				<!-- Password -->
+				<div class="auth-form-group">
+					<label for="register-password">Password</label>
+					<input type="password" id="register-password" name="password" placeholder="Create a strong password" autocomplete="new-password" required>
+					<span class="input-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+					</span>
+					<button type="button" class="toggle-password" id="toggle-register-password" aria-label="Toggle password visibility">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" class="eye-open"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" class="eye-closed" style="display:none;"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
+					</button>
+					<div class="password-strength">
+						<div class="strength-bar" id="register-strength-bar"></div>
+					</div>
+					<div class="strength-text" id="register-strength-text"></div>
+				</div>
+
+				<!-- Confirm Password -->
+				<div class="auth-form-group">
+					<label for="register-confirm-password">Confirm Password</label>
+					<input type="password" id="register-confirm-password" name="confirmPassword" placeholder="Confirm your password" autocomplete="new-password" required>
+					<span class="input-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+					</span>
+				</div>
+
+				<!-- Phone Number -->
+				<div class="auth-form-group">
+					<label for="register-phone">Phone Number</label>
+					<input type="tel" id="register-phone" name="phone" th:value="${phone}" placeholder="Enter your phone number" autocomplete="tel">
+					<span class="input-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+					</span>
+				</div>
+
+				<!-- Submit -->
+				<button type="submit" class="auth-btn auth-btn-primary" id="register-submit-btn" style="margin-top: 8px;">
+					<span class="btn-text">Create Account</span>
+				</button>
+			</form>
+
+			<!-- Divider -->
+			<div class="auth-divider"><span>or</span></div>
+
+			<!-- Social login -->
+			<div class="auth-social">
+				<a href="#" class="auth-social-btn" id="google-register-btn">
+					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+					Google
+				</a>
+				<a href="#" class="auth-social-btn" id="facebook-register-btn">
+					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/></svg>
+					Facebook
+				</a>
+			</div>
+
+			<!-- Bottom link -->
+			<div class="auth-bottom">
+				Already have an account? <a href="login.html" id="login-link">Sign In</a>
+			</div>
+		</div>
+	</div>
+
+	<script src="js/auth.js"></script>
+</body>
+
+</html>

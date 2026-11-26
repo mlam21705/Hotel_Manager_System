@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{receptionist/receptionist-header :: head('Danh sách đặt phòng Lễ tân — Khách sạn Harbor Lights')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-danger { background: #dc3545; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-danger:hover { background: #c82333; color: #fff; transform: translateY(-2px); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        
+        .filter-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+
+        .table {
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .table thead th {
+            border-bottom: 2px solid #f96d00;
+            color: #222;
+            font-weight: 700;
+        }
+        
+        .badge-status {
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge-status-pending { background-color: #fca311 !important; }
+        .badge-status-confirmed { background-color: #007bff !important; }
+        .badge-status-checkedin { background-color: #28a745 !important; }
+        .badge-status-checkedout { background-color: #6c757d !important; }
+        .badge-status-cancelled { background-color: #dc3545 !important; }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{receptionist/receptionist-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/receptionist/home">Trang chủ</a></span> <span>Lễ tân</span></p>
+                        <h1 class="mb-4 bread">Quản Lý Đặt Phòng</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            
+            <div class="row justify-content-between align-items-center mb-4">
+                <div class="col-md-8">
+                    <h2>Danh Sách Đặt Phòng</h2>
+                    <p class="text-muted">Tìm kiếm, xác nhận, nhận phòng (check-in) và làm thủ tục trả phòng (check-out) cho khách hàng.</p>
+                </div>
+            </div>
+
+            <!-- ALERTS -->
+            <div class="row mb-4" th:if="${successMessage != null or errorMessage != null}">
+                <div class="col-12">
+                    <div th:if="${successMessage != null}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${successMessage}">Success message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div th:if="${errorMessage != null}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${errorMessage}">Error message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER CARD -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="filter-card">
+                        <form id="filter-form" method="get" action="/receptionist/reservations">
+                            <div class="form-row align-items-end">
+                                <div class="form-group col-md-3">
+                                    <label for="guestName" class="font-weight-bold text-dark">Tên khách hàng</label>
+                                    <input type="text" class="form-control" name="guestName" id="guestName" th:value="${guestName}" placeholder="Nhập tên khách...">
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="phone" class="font-weight-bold text-dark">Số điện thoại</label>
+                                    <input type="text" class="form-control" name="phone" id="phone" th:value="${phone}" placeholder="Nhập số điện thoại...">
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="status" class="font-weight-bold text-dark">Trạng thái</label>
+                                    <select class="form-control" name="status" id="status">
+                                        <option value="ALL" th:selected="${selectedStatus == 'ALL'}">Tất cả trạng thái</option>
+                                        <option value="Pending" th:selected="${selectedStatus == 'Pending'}">Chờ xác nhận (Pending)</option>
+                                        <option value="Confirmed" th:selected="${selectedStatus == 'Confirmed'}">Đã xác nhận (Confirmed)</option>
+                                        <option value="Checked-In" th:selected="${selectedStatus == 'Checked-In'}">Đang lưu trú (Checked-In)</option>
+                                        <option value="Checked-Out" th:selected="${selectedStatus == 'Checked-Out'}">Đã trả phòng (Checked-Out)</option>
+                                        <option value="Cancelled" th:selected="${selectedStatus == 'Cancelled'}">Đã huỷ (Cancelled)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3 text-right">
+                                    <button type="submit" class="btn btn-custom px-4" style="height: 48px; line-height: 14px;">Tìm kiếm</button>
+                                    <button type="button" class="btn btn-custom-dark px-3 ml-1" id="btn-reset-filters" style="height: 48px; line-height: 14px;">Đặt lại</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESERVATIONS LIST -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm p-4 bg-white">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>CCCD</th>
+                                        <th>Số điện thoại</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Trạng thái</th>
+                                        <th>Đã cọc / Tổng tiền</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reservations-table-body">
+                                    <tr th:if="${#lists.isEmpty(reservations)}">
+                                        <td colspan="8" class="text-center py-4 text-muted">Không tìm thấy đơn đặt phòng nào phù hợp.</td>
+                                    </tr>
+                                    <tr th:each="res : ${reservations}" class="reservation-row">
+                                        <td th:text="${'#' + res.reservationId}">#1</td>
+                                        <td th:text="${res.guest.guestName}">John Doe</td>
+                                        <td th:text="${res.guest.cccd}">001090123456</td>
+                                        <td th:text="${res.guest.phoneNumber}">0901234567</td>
+                                        <td th:text="${#temporals.format(res.reserveDate, 'dd/MM/yyyy HH:mm')}">12/06/2026</td>
+                                        <td>
+                                            <span class="badge-status" th:classappend="${res.reservationStatus == 'Pending' ? 'badge-status-pending' : (res.reservationStatus == 'Confirmed' ? 'badge-status-confirmed' : (res.reservationStatus == 'Checked-In' ? 'badge-status-checkedin' : (res.reservationStatus == 'Checked-Out' ? 'badge-status-checkedout' : 'badge-status-cancelled')))}" th:text="${res.reservationStatus == 'Pending' ? 'Chờ xác nhận' : (res.reservationStatus == 'Confirmed' ? 'Đã xác nhận' : (res.reservationStatus == 'Checked-In' ? 'Đang lưu trú' : (res.reservationStatus == 'Checked-Out' ? 'Đã trả phòng' : 'Đã huỷ')))}">Chờ xác nhận</span>
+                                        </td>
+                                        <td th:text="${#numbers.formatDecimal(res.totalAmount, 1, 'POINT', 0, 'COMMA') + ' VND'}">1,000,000 VND</td>
+                                        <td>
+                                            <!-- Action triggers -->
+                                            <button th:if="${res.reservationStatus == 'Pending'}" class="btn btn-sm btn-custom confirm-btn" th:data-id="${res.reservationId}">Xác nhận</button>
+                                            <a th:href="@{/receptionist/reservations/{id}(id=${res.reservationId})}" class="btn btn-sm btn-custom-dark text-white ml-1">Quản lý</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CONFIRM MODAL -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0 pl-0 pr-0">
+                    <h5 class="modal-title font-weight-bold text-dark">Xác Nhận Đặt Phòng</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body pl-0 pr-0">
+                    <form th:action="@{/receptionist/reservations/confirm}" method="post">
+                        <input type="hidden" id="confirmReservationId" name="reservationId">
+                        
+                        <p class="text-muted">Bạn có chắc chắn muốn xác nhận đơn đặt phòng này? Quy trình xác nhận yêu cầu khách hàng phải đã thanh toán tiền đặt cọc.</p>
+                        
+                        <div class="form-group form-check pl-4">
+                            <input type="checkbox" class="form-check-input" id="depositConfirmed" name="depositConfirmed" required>
+                            <label class="form-check-label text-dark font-weight-bold" for="depositConfirmed">Tôi xác nhận khách hàng đã hoàn tất đặt cọc tiền phòng.</label>
+                        </div>
+                        
+                        <div class="text-right mt-4">
+                            <button type="button" class="btn btn-secondary px-4 py-2" data-dismiss="modal" style="border-radius: 0;">Huỷ bỏ</button>
+                            <button type="submit" class="btn btn-custom px-4 py-2">Xác nhận</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{receptionist/receptionist-header :: scripts}"></div>
+
+    <script>
+        $(document).ready(function() {
+            // Reset filters
+            $('#btn-reset-filters').click(function() {
+                window.location.href = '/receptionist/reservations';
+            });
+
+            // Open confirm modal
+            $('.confirm-btn').click(function() {
+                let id = $(this).data('id');
+                $('#confirmReservationId').val(id);
+                $('#depositConfirmed').prop('checked', false);
+                $('#confirmModal').modal('show');
+            });
+        });
+    </script>
+</body>
+</html>

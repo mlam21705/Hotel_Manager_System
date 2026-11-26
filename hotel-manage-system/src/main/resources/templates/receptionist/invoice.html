@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{receptionist/receptionist-header :: head('Hoá đơn thanh toán Lễ tân — Khách sạn Harbor Lights')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        
+        .invoice-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 0;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            color: #333;
+        }
+
+        .table {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .table thead th {
+            background-color: #fafafa;
+            border-bottom: 2px solid #f96d00;
+            color: #222;
+            font-weight: 700;
+        }
+        
+        @media print {
+            .navbar, .hero-wrap, footer, .no-print, #ftco-loader {
+                display: none !important;
+            }
+            .invoice-card {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            body {
+                background-color: #fff !important;
+            }
+            .ftco-section {
+                padding: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{receptionist/receptionist-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap no-print" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/receptionist/home">Trang chủ</a></span> <span>Hoá đơn</span></p>
+                        <h1 class="mb-4 bread">Hoá Đơn Khách Sạn</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            
+            <div class="row mb-4 no-print">
+                <div class="col-12">
+                    <a href="/receptionist/reservations" class="btn btn-custom-dark px-4 py-2 font-weight-bold">&larr; Quay lại danh sách đặt phòng</a>
+                </div>
+            </div>
+
+            <!-- INVOICE RECEIPT CARD -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="invoice-card">
+                        
+                        <!-- Header -->
+                        <div class="row mb-4 pb-4 border-bottom">
+                            <div class="col-md-6 col-sm-12">
+                                <h3 class="font-weight-bold text-dark mb-0">HARBOR LIGHTS HOTEL</h3>
+                                <p class="text-muted mb-0">123 Coastal Road, Branch 1 (North)</p>
+                                <p class="text-muted">Hotline: 1900-5454-99</p>
+                            </div>
+                            <div class="col-md-6 col-sm-12 text-md-right">
+                                <h2 class="font-weight-bold text-success mb-0">HOÁ ĐƠN THANH TOÁN</h2>
+                                <h6 class="font-weight-bold text-dark mt-2" th:text="${'Số hoá đơn: #INV-' + invoice.invoiceId}">#INV-1</h6>
+                                <p class="text-muted" th:text="${'Ngày xuất HD: ' + #temporals.format(invoice.invoiceDate, 'dd/MM/yyyy HH:mm')}">14/07/2026</p>
+                            </div>
+                        </div>
+
+                        <!-- Info details -->
+                        <div class="row mb-5">
+                            <div class="col-md-6 col-sm-12">
+                                <h5 class="font-weight-bold text-dark border-bottom pb-2 mb-3">KHÁCH HÀNG</h5>
+                                <p class="mb-1"><strong>Họ và tên:</strong> <span th:text="${reserve.guest.guestName}">John Doe</span></p>
+                                <p class="mb-1"><strong>Số CCCD:</strong> <span th:text="${reserve.guest.cccd}">001090123456</span></p>
+                                <p class="mb-1"><strong>Số điện thoại:</strong> <span th:text="${reserve.guest.phoneNumber}">0901234567</span></p>
+                                <p class="mb-0"><strong>Địa chỉ:</strong> <span th:text="${reserve.guest.address}">Hanoi, VN</span></p>
+                            </div>
+                            <div class="col-md-6 col-sm-12 text-md-right">
+                                <h5 class="font-weight-bold text-dark border-bottom pb-2 mb-3 text-md-right">CHI TIẾT THANH TOÁN</h5>
+                                <p class="mb-1"><strong>Mã đặt đơn:</strong> <span th:text="${'#' + reserve.reservationId}">#1</span></p>
+                                <p class="mb-1"><strong>Trạng thái giao dịch:</strong> <span class="text-success font-weight-bold" th:text="${invoice.invoiceStatus}">Đã thanh toán</span></p>
+                                <p class="mb-0"><strong>Phương thức:</strong> Tiền mặt / Thẻ ngân hàng tại quầy</p>
+                            </div>
+                        </div>
+
+                        <!-- Table breakdowns -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="font-weight-bold text-dark border-bottom pb-2 mb-3">DANH MỤC CHI PHÍ</h5>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Phòng / Dịch vụ</th>
+                                                <th>Chi tiết</th>
+                                                <th class="text-right">Đơn giá</th>
+                                                <th class="text-center">Số lượng / Số đêm</th>
+                                                <th class="text-right">Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Room details list loop -->
+                                            <tr th:each="rb : ${roomBreakdowns}">
+                                                <td>
+                                                    <span class="font-weight-bold text-dark" th:text="${'Phòng ' + rb.roomNo}">Phòng 101</span>
+                                                    <small class="text-muted d-block" th:text="${'Loại: ' + rb.typeName}"></small>
+                                                </td>
+                                                <td th:text="${'Thời gian ở: ' + #temporals.format(rb.checkIn, 'dd/MM/yyyy') + ' - ' + #temporals.format(rb.checkOut, 'dd/MM/yyyy')}">12/06/2026 - 14/06/2026</td>
+                                                <td class="text-right" th:text="${#numbers.formatDecimal(rb.price, 1, 'POINT', 0, 'COMMA') + ' VND'}">1,000,000 VND</td>
+                                                <td class="text-center" th:text="${rb.nights + ' đêm'}">2 đêm</td>
+                                                <td class="text-right font-weight-bold text-dark" th:text="${#numbers.formatDecimal(rb.roomCost, 1, 'POINT', 0, 'COMMA') + ' VND'}">2,000,000 VND</td>
+                                            </tr>
+                                            <!-- Consumed services loops (if present) -->
+                                            <th:block th:each="d : ${reserve.reserveDetails}">
+                                                <tr th:each="us : ${d.useServices}">
+                                                    <td>
+                                                        <span th:text="${'Dịch vụ - Phòng ' + d.room.id.roomNo}">Dịch vụ</span>
+                                                    </td>
+                                                    <td th:text="${us.service.serviceName}">Drink</td>
+                                                    <td class="text-right" th:text="${#numbers.formatDecimal(us.priceAtTime, 1, 'POINT', 0, 'COMMA') + ' VND'}">50,000 VND</td>
+                                                    <td class="text-center" th:text="${us.quantity}">1</td>
+                                                    <td class="text-right font-weight-bold text-dark" th:text="${#numbers.formatDecimal(us.priceAtTime * us.quantity, 1, 'POINT', 0, 'COMMA') + ' VND'}">50,000 VND</td>
+                                                </tr>
+                                            </th:block>
+                                            <!-- Summary totals -->
+                                            <tr>
+                                                <td colspan="4" class="text-right font-weight-bold text-dark">Tiền phòng:</td>
+                                                <td class="text-right font-weight-bold text-dark" th:text="${#numbers.formatDecimal(totalRoomCost, 1, 'POINT', 0, 'COMMA') + ' VND'}">2,000,000 VND</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="4" class="text-right font-weight-bold text-dark">Tiền dịch vụ phát sinh:</td>
+                                                <td class="text-right font-weight-bold text-dark" th:text="${#numbers.formatDecimal(totalServiceCost, 1, 'POINT', 0, 'COMMA') + ' VND'}">50,000 VND</td>
+                                            </tr>
+                                            <tr style="background-color: #f6faf6;">
+                                                <td colspan="4" class="text-right font-weight-bold text-success" style="font-size: 1.25rem;">TỔNG THANH TOÁN:</td>
+                                                <td class="text-right font-weight-bold text-success" style="font-size: 1.25rem;" th:text="${#numbers.formatDecimal(grandTotal, 1, 'POINT', 0, 'COMMA') + ' VND'}">2,050,000 VND</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer disclaimer & Print buttons -->
+                        <div class="row mt-4 pt-4 border-top">
+                            <div class="col-md-6 col-sm-12">
+                                <p class="small text-muted mb-0">Cảm ơn Quý khách đã lựa chọn dịch vụ tại Harbor Lights Hotel!</p>
+                                <p class="small text-muted">Hẹn gặp lại Quý khách lần sau.</p>
+                            </div>
+                            <div class="col-md-6 col-sm-12 text-md-right no-print">
+                                <button type="button" class="btn btn-custom px-4 py-3 mr-2 font-weight-bold" onclick="window.print()">
+                                    In Hoá Đơn (Print)
+                                </button>
+                                <a href="/receptionist/reservations" class="btn btn-custom-dark px-4 py-3 font-weight-bold">
+                                    Hoàn thành
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{receptionist/receptionist-header :: scripts}"></div>
+
+    <script>
+        $(document).ready(function() {
+        });
+    </script>
+</body>
+</html>

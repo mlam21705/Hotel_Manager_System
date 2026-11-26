@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{housekeeper/housekeeper-header :: head('Assigned Tasks - Housekeeper — Harbor Lights Hotel')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        .btn-custom-success { background: #28a745; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-success:hover { background: #218838; color: #fff; transform: translateY(-2px); }
+        
+        .table {
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .table thead th {
+            border-bottom: 2px solid #f96d00;
+            color: #222;
+            font-weight: 700;
+        }
+        
+        .badge-status-empty {
+            background-color: #28a745 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        .badge-status-cleaning {
+            background-color: #fca311 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        .badge-status-occupied {
+            background-color: #007bff !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        
+        .badge-task-pending {
+            background-color: #6c757d !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        .badge-task-cleaning {
+            background-color: #fca311 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        .badge-task-completed {
+            background-color: #28a745 !important;
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+        }
+        
+        .filter-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .form-control {
+            border-radius: 0 !important;
+            border: 1px solid #e6e6e6;
+        }
+        .form-control:focus {
+            border-color: #f96d00;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{housekeeper/housekeeper-header :: navbar}"></div>
+
+    <!-- HERO SECTION -->
+    <section class="hero-wrap hero-wrap-2" style="background-image: url('/images/bg_3.jpg');" data-stellar-background-ratio="0.5">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center">
+                    <p class="breadcrumbs"><span class="mr-2">Housekeeper</span> <span>Tasks</span></p>
+                    <h1 class="mb-3 bread">Assigned Cleaning Tasks</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENT SECTION -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            <!-- Messages -->
+            <div class="row mb-3" th:if="${successMessage != null or errorMessage != null}">
+                <div class="col-md-12">
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${successMessage}">Success message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${errorMessage}">Error message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER CARD -->
+            <div class="row mb-5">
+                <div class="col-md-12">
+                    <div class="filter-card">
+                        <form method="get" action="/housekeeper/tasks" class="form-row align-items-end">
+                            <div class="form-group col-md-3 mb-0">
+                                <label for="date-filter" class="font-weight-bold text-dark">Task Date</label>
+                                <input type="date" class="form-control" id="date-filter" name="date" th:value="${selectedDate}">
+                            </div>
+                            <div class="form-group col-md-3 mb-0">
+                                <label for="status-filter" class="font-weight-bold text-dark">Task Status</label>
+                                <select class="form-control" id="status-filter" name="status">
+                                    <option value="ALL" th:selected="${selectedStatus == 'ALL'}">All Tasks</option>
+                                    <option value="Pending" th:selected="${selectedStatus == 'Pending'}">Pending (Chưa dọn)</option>
+                                    <option value="Cleaning" th:selected="${selectedStatus == 'Cleaning'}">Cleaning (Đang dọn)</option>
+                                    <option value="Completed" th:selected="${selectedStatus == 'Completed'}">Completed (Đã dọn xong)</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3 mb-0">
+                                <label for="search-tasks" class="font-weight-bold text-dark">Search Task</label>
+                                <input type="text" class="form-control" id="search-tasks" placeholder="Search room, status, notes...">
+                            </div>
+                            <div class="form-group col-md-3 mb-0 text-right">
+                                <button type="submit" class="btn btn-custom px-4 py-2 mr-2">Filter</button>
+                                <a href="/housekeeper/tasks" class="btn btn-custom-dark px-4 py-2">Reset</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TASKS TABLE -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th>Branch</th>
+                                    <th>Room No</th>
+                                    <th>Floor</th>
+                                    <th>Room Status</th>
+                                    <th>Task Status</th>
+                                    <th>Date</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasks-table-body">
+                                <tr th:each="task : ${tasks}" class="task-row">
+                                    <td th:text="'Branch ' + ${task.room.id.branchId}">Branch 1</td>
+                                    <td><strong th:text="${task.room.id.roomNo}">101</strong></td>
+                                    <td th:text="${task.room.floor}">1</td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${task.room.roomStatus == 'Trống' ? 'badge-status-empty' : (task.room.roomStatus == 'Đang dọn' ? 'badge-status-cleaning' : 'badge-status-occupied')}"
+                                              th:text="${task.room.roomStatus}">Trống</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${task.status == 'Completed' ? 'badge-task-completed' : (task.status == 'Cleaning' ? 'badge-task-cleaning' : 'badge-task-pending')}"
+                                              th:text="${task.status}">Pending</span>
+                                    </td>
+                                    <td th:text="${task.taskDate}">2026-07-07</td>
+                                    <td th:text="${task.notes}">-</td>
+                                    <td>
+                                        <!-- If task is Pending -->
+                                        <form th:if="${task.status == 'Pending'}" method="post" action="/housekeeper/tasks/update-status" style="display: inline;">
+                                            <input type="hidden" name="taskId" th:value="${task.taskId}">
+                                            <input type="hidden" name="taskStatus" value="Cleaning">
+                                            <input type="hidden" name="roomStatus" value="Đang dọn">
+                                            <button type="submit" class="btn btn-sm btn-custom px-3 py-1">Start Cleaning</button>
+                                        </form>
+                                        
+                                        <!-- If task is Cleaning -->
+                                        <form th:if="${task.status == 'Cleaning'}" method="post" action="/housekeeper/tasks/update-status" style="display: inline;">
+                                            <input type="hidden" name="taskId" th:value="${task.taskId}">
+                                            <input type="hidden" name="taskStatus" value="Completed">
+                                            <input type="hidden" name="roomStatus" value="Trống">
+                                            <button type="submit" class="btn btn-sm btn-custom-success px-3 py-1">Finish Cleaning</button>
+                                        </form>
+
+                                        <!-- If task is Completed -->
+                                        <span th:if="${task.status == 'Completed'}" class="text-success font-weight-bold">
+                                            <i class="icon-check"></i> Completed
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(tasks)}">
+                                    <td colspan="8" class="py-4 text-muted">No cleaning tasks assigned for the selected criteria.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination Container -->
+                    <div class="row mt-4">
+                        <div class="col-12" id="pagination-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="ftco-footer ftco-section img" style="background-image: url('/images/bg_4.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Harbor Lights</h2>
+                        <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+                        <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
+                            <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
+                            <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4 ml-md-5">
+                        <h2 class="ftco-heading-2">Useful Links</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Blog</a></li>
+                            <li><a href="#" class="py-2 d-block">Rooms</a></li>
+                            <li><a href="#" class="py-2 d-block">Amenities</a></li>
+                            <li><a href="#" class="py-2 d-block">Gift Card</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Privacy</h2>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="py-2 d-block">Career</a></li>
+                            <li><a href="#" class="py-2 d-block">About Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Contact Us</a></li>
+                            <li><a href="#" class="py-2 d-block">Services</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="ftco-footer-widget mb-4">
+                        <h2 class="ftco-heading-2">Have Questions?</h2>
+                        <div class="block-23 mb-3">
+                            <ul>
+                                <li><span class="icon icon-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+                                <li><a href="#"><span class="icon icon-phone"></span><span class="text">+2 392 3929 210</span></a></li>
+                                <li><a href="#"><span class="icon icon-envelope"></span><span class="text">info@yourdomain.com</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>
+                        Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart color-danger" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{housekeeper/housekeeper-header :: scripts}"></div>
+    <script src="/js/search-pagination.js"></script>
+    <script>
+        $(document).ready(function() {
+            initSearchPagination({
+                searchInputId: '#search-tasks',
+                itemContainerSelector: '#tasks-table-body',
+                itemSelector: '.task-row',
+                paginationContainerId: '#pagination-container',
+                pageSize: 5,
+                searchFields: ['td:nth-child(1)', 'td:nth-child(2) strong', 'td:nth-child(3)', 'td:nth-child(4)', 'td:nth-child(5)']
+            });
+        });
+    </script>
+</body>
+</html>

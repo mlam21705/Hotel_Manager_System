@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{Customer/customer-header :: head('Trang chủ | Harbor Lights')}"></head>
+<body>
+<nav th:replace="~{Customer/customer-header :: nav('home')}"></nav>
+<section class="home-slider owl-carousel customer-home-slider">
+  <div class="slider-item" style="background-image:url('/images/bg_1.jpg');"><div class="overlay"></div><div class="container"><div class="row justify-content-center no-gutters slider-text align-items-center"><div class="col-md-10 ftco-animate"><div class="text text-center"><span class="customer-eyebrow">Chào mừng trở lại</span><h1 class="mb-3" th:text="${guest != null ? 'Xin chào, ' + guest.guestName : 'Xin chào quý khách'}">Xin chào quý khách</h1><p class="customer-hero-copy">Tìm căn phòng phù hợp, quản lý kỳ nghỉ và tận hưởng dịch vụ của Harbor Lights.</p><p><a th:href="@{/customer/rooms}" class="btn btn-primary px-5 py-3">Đặt phòng ngay</a></p></div></div></div></div></div>
+  <div class="slider-item" style="background-image:url('/images/bg_2.jpg');"><div class="overlay"></div><div class="container"><div class="row justify-content-center no-gutters slider-text align-items-center"><div class="col-md-10 ftco-animate"><div class="text text-center"><span class="customer-eyebrow">Kỳ nghỉ đáng nhớ</span><h1 class="mb-3">Không gian sang trọng, trải nghiệm ấm áp</h1><p class="customer-hero-copy">Theo dõi mọi đơn đặt phòng của bạn tại một nơi duy nhất.</p><p><a th:href="@{/customer/reservations}" class="btn btn-primary px-5 py-3">Xem lịch sử</a></p></div></div></div></div></div>
+</section>
+<section class="ftco-section customer-dashboard">
+<div class="container">
+  <div class="row justify-content-center mb-5"><div class="col-md-8 heading-section text-center ftco-animate"><span class="subheading">Tài khoản khách hàng</span><h2 class="mb-4">Quản lý kỳ nghỉ thật dễ dàng</h2></div></div>
+  <div class="row mb-5">
+    <div class="col-md-4 d-flex ftco-animate"><a th:href="@{/customer/rooms}" class="customer-action-card"><span class="icon ion-ios-bed"></span><h3>Tìm phòng trống</h3><p>Tìm theo ngày lưu trú, loại phòng, số khách và chi nhánh.</p></a></div>
+    <div class="col-md-4 d-flex ftco-animate"><a th:href="@{/customer/reservations}" class="customer-action-card"><span class="icon ion-ios-list-box"></span><h3>Đơn đặt phòng</h3><p>Xem trạng thái, chi tiết dịch vụ và tổng thanh toán.</p></a></div>
+    <div class="col-md-4 d-flex ftco-animate"><a th:href="@{/customer/profile}" class="customer-action-card"><span class="icon ion-ios-person"></span><h3>Hồ sơ cá nhân</h3><p>Cập nhật thông tin liên hệ và CCCD của bạn.</p></a></div>
+  </div>
+  <div class="customer-panel ftco-animate">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"><div><span class="subheading">Gần đây</span><h3 class="mb-0">Đơn đặt phòng mới nhất</h3></div><a th:href="@{/customer/reservations}" class="btn btn-outline-primary mt-3 mt-md-0">Xem tất cả</a></div>
+    <div class="table-responsive"><table class="table customer-table"><thead><tr><th>Mã đơn</th><th>Ngày tạo</th><th>Trạng thái</th><th>Tổng tiền</th><th></th></tr></thead><tbody>
+      <tr th:each="r : ${recentReservations}"><td><strong th:text="${'#' + r.reservationId}">#1</strong></td><td th:text="${r.reserveDate}">01/01/2026</td><td><span class="status-badge" th:classappend="${#strings.toLowerCase(r.reservationStatus)}" th:text="${r.reservationStatus}">Pending</span></td><td class="money" th:text="${#numbers.formatDecimal(r.totalAmount,0,'COMMA',0,'POINT') + ' ₫'}">0 ₫</td><td class="text-right"><a th:href="@{/customer/reservations/{id}(id=${r.reservationId})}" class="btn btn-sm btn-primary">Chi tiết</a></td></tr>
+      <tr th:if="${recentReservations == null or #lists.isEmpty(recentReservations)}"><td colspan="5" class="text-center py-5"><span class="empty-icon ion-ios-calendar"></span><p class="mb-3">Bạn chưa có đơn đặt phòng nào.</p><a th:href="@{/customer/rooms}" class="btn btn-primary">Tìm phòng ngay</a></td></tr>
+    </tbody></table></div>
+  </div>
+</div></section>
+<div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+<div th:replace="~{Customer/customer-header :: scripts}"></div>
+</body></html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:insert="~{receptionist/receptionist-header :: head('Bảng điều khiển Lễ tân — Khách sạn Harbor Lights')}"></th:block>
+    
+    <style>
+        .btn-custom { background: #f96d00; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom:hover { background: #e06200; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(249,109,0,0.3); }
+        .btn-custom-danger { background: #dc3545; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-danger:hover { background: #c82333; color: #fff; transform: translateY(-2px); }
+        .btn-custom-dark { background: #1e1e24; color: #fff; border: none; border-radius: 2px; transition: all 0.3s; }
+        .btn-custom-dark:hover { background: #0b0b0d; color: #fff; transform: translateY(-2px); }
+        
+        .stat-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+        }
+        .stat-card h3 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: #222;
+        }
+        .stat-card p {
+            margin: 5px 0 0 0;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        .stat-border-empty { border-left: 5px solid #28a745; }
+        .stat-border-occupied { border-left: 5px solid #007bff; }
+        .stat-border-cleaning { border-left: 5px solid #fca311; }
+        .stat-border-maintenance { border-left: 5px solid #dc3545; }
+        .stat-border-pending { border-left: 5px solid #6f42c1; }
+
+        .table {
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .table thead th {
+            border-bottom: 2px solid #f96d00;
+            color: #222;
+            font-weight: 700;
+        }
+        
+        .badge-status {
+            color: #fff;
+            border-radius: 0;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge-status-pending { background-color: #fca311 !important; }
+        .badge-status-confirmed { background-color: #007bff !important; }
+        .badge-status-checkedin { background-color: #28a745 !important; }
+        .badge-status-checkedout { background-color: #6c757d !important; }
+        .badge-status-cancelled { background-color: #dc3545 !important; }
+    </style>
+</head>
+<body>
+
+    <!-- NAV BAR -->
+    <div th:replace="~{receptionist/receptionist-header :: navbar}"></div>
+
+    <!-- HERO HEADER -->
+    <div class="hero-wrap" style="background-image: url('/images/bg_3.jpg');">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="row no-gutters slider-text d-flex align-items-center justify-content-center">
+                <div class="col-md-9 ftco-animate text-center d-flex align-items-end justify-content-center">
+                    <div class="text">
+                        <p class="breadcrumbs mb-2"><span class="mr-2"><a href="/receptionist/home">Trang chủ</a></span> <span>Lễ tân</span></p>
+                        <h1 class="mb-4 bread" th:text="${'Xin chào, ' + currentUser.username}">Lễ tân</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <section class="ftco-section bg-light">
+        <div class="container">
+            
+            <!-- ALERTS -->
+            <div class="row mb-4" th:if="${successMessage != null or errorMessage != null}">
+                <div class="col-12">
+                    <div th:if="${successMessage != null}" class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${successMessage}">Success message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div th:if="${errorMessage != null}" class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 0;">
+                        <span th:text="${errorMessage}">Error message</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATS CARDS -->
+            <div class="row">
+                <div class="col-md-2 col-sm-6">
+                    <div class="stat-card stat-border-empty">
+                        <h3 th:text="${emptyCount}">0</h3>
+                        <p class="text-success">Phòng Trống</p>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-6">
+                    <div class="stat-card stat-border-occupied">
+                        <h3 th:text="${occupiedCount}">0</h3>
+                        <p class="text-primary">Đang sử dụng</p>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-6">
+                    <div class="stat-card stat-border-cleaning">
+                        <h3 th:text="${cleaningCount}">0</h3>
+                        <p class="text-warning">Đang dọn dẹp</p>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-6">
+                    <div class="stat-card stat-border-maintenance">
+                        <h3 th:text="${maintenanceCount}">0</h3>
+                        <p class="text-danger">Đang bảo trì</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <div class="stat-card stat-border-pending">
+                        <h3 th:text="${pendingCount}">0</h3>
+                        <p style="color: #6f42c1;">Đơn chờ xác nhận</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PENDING RESERVATIONS LIST -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="font-weight-bold text-dark mb-0">Yêu cầu đặt phòng chờ xác nhận</h4>
+                            <a href="/receptionist/reservations?status=Pending" class="btn btn-custom px-3 py-2">Xem Tất Cả</a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Số điện thoại</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Trạng thái</th>
+                                        <th>Tổng tiền tạm tính</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(pendingReservations)}">
+                                        <td colspan="7" class="text-center py-4 text-muted">Không có yêu cầu đặt phòng chờ duyệt nào.</td>
+                                    </tr>
+                                    <tr th:each="res : ${pendingReservations}">
+                                        <td th:text="${'#' + res.reservationId}">#1</td>
+                                        <td th:text="${res.guest.guestName}">John Doe</td>
+                                        <td th:text="${res.guest.phoneNumber}">0901234567</td>
+                                        <td th:text="${#temporals.format(res.reserveDate, 'dd/MM/yyyy HH:mm')}">12/06/2026</td>
+                                        <td>
+                                            <span class="badge-status badge-status-pending">Chờ xác nhận</span>
+                                        </td>
+                                        <td th:text="${#numbers.formatDecimal(res.totalAmount, 1, 'POINT', 0, 'COMMA') + ' VND'}">1,000,000 VND</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-custom confirm-btn" th:data-id="${res.reservationId}">Xác nhận</button>
+                                            <a th:href="@{/receptionist/reservations/{id}(id=${res.reservationId})}" class="btn btn-sm btn-custom-dark text-white ml-1">Chi tiết</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CONFIRM MODAL -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0 pl-0 pr-0">
+                    <h5 class="modal-title font-weight-bold text-dark">Xác Nhận Đặt Phòng</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body pl-0 pr-0">
+                    <form th:action="@{/receptionist/reservations/confirm}" method="post">
+                        <input type="hidden" id="confirmReservationId" name="reservationId">
+                        
+                        <p class="text-muted">Bạn có chắc chắn muốn xác nhận đơn đặt phòng này? Quy trình xác nhận yêu cầu khách hàng phải đã thanh toán tiền đặt cọc.</p>
+                        
+                        <div class="form-group form-check pl-4">
+                            <input type="checkbox" class="form-check-input" id="depositConfirmed" name="depositConfirmed" required>
+                            <label class="form-check-label text-dark font-weight-bold" for="depositConfirmed">Tôi xác nhận khách hàng đã hoàn tất đặt cọc tiền phòng.</label>
+                        </div>
+                        
+                        <div class="text-right mt-4">
+                            <button type="button" class="btn btn-secondary px-4 py-2" data-dismiss="modal" style="border-radius: 0;">Huỷ bỏ</button>
+                            <button type="submit" class="btn btn-custom px-4 py-2">Xác nhận</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- loader -->
+    <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>
+
+    <!-- SCRIPTS -->
+    <div th:replace="~{receptionist/receptionist-header :: scripts}"></div>
+
+    <script>
+        $(document).ready(function() {
+            // Open confirm modal
+            $('.confirm-btn').click(function() {
+                let id = $(this).data('id');
+                $('#confirmReservationId').val(id);
+                $('#depositConfirmed').prop('checked', false);
+                $('#confirmModal').modal('show');
+            });
+        });
+    </script>
+</body>
+</html>
